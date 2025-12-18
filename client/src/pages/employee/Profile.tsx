@@ -1,8 +1,9 @@
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { User as UserIcon, Mail, Briefcase, Building, AlertCircle } from 'lucide-react';
+import { User as UserIcon, Mail, Briefcase, Building, AlertCircle, Calendar } from 'lucide-react';
 import { getStoredLeaves, getLeaveBalance } from '@/lib/storage';
+import { HOLIDAYS_2025 } from '@/lib/data';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -10,6 +11,24 @@ export default function Profile() {
   if (!user) return null;
 
   const balance = getLeaveBalance(user.code);
+  
+  // Mock data for worked dates (would come from attendance system in real app)
+  const workedDates = ['2025-01-27', '2025-01-28', '2025-01-29', '2025-01-30', '2025-01-31'];
+  
+  const isSunday = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.getDay() === 0;
+  };
+  
+  const isHoliday = (dateStr: string) => {
+    return HOLIDAYS_2025.some(h => h.date === dateStr);
+  };
+  
+  const isWorked = (dateStr: string) => {
+    return workedDates.includes(dateStr);
+  };
+  
+  const upcomingHolidays = HOLIDAYS_2025.slice(0, 5);
 
   // Mock calculation for worked days
   // In a real app, this would calculate actual working days minus leaves
@@ -37,7 +56,7 @@ export default function Profile() {
             </div>
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300">
               <Building className="w-4 h-4 text-primary" />
-              <span>{user.department || 'Engineering'}</span>
+              <span>{user.designation}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300">
               <UserIcon className="w-4 h-4 text-primary" />
@@ -47,7 +66,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-card/40 backdrop-blur border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Productivity Overview</CardTitle>
@@ -107,6 +126,41 @@ export default function Profile() {
                    <AlertCircle className="w-3 h-3 text-primary" />
                    <span>Balances reset on Jan 1st of every year.</span>
                 </div>
+             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/40 backdrop-blur border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              Holidays & Sundays
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+             <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-gray-300">Public Holiday</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <span className="text-gray-300">Sunday (Off)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-gray-300">Worked on Off Day</span>
+                </div>
+             </div>
+             
+             <div className="pt-3 border-t border-white/5 space-y-2">
+               <p className="text-xs text-gray-400 font-semibold">Upcoming Holidays</p>
+               {upcomingHolidays.map((holiday) => (
+                 <div key={holiday.date} className="flex justify-between items-center text-xs">
+                   <span className="text-gray-300">{holiday.name}</span>
+                   <span className="text-gray-500">{new Date(holiday.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                 </div>
+               ))}
              </div>
           </CardContent>
         </Card>

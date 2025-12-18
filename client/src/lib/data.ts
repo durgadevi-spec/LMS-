@@ -1,13 +1,14 @@
 // Mock Data and Type Definitions
 
 export type Role = 'Admin' | 'Employee' | 'HR';
+export type LeaveType = 'Casual' | 'Sick' | 'LWP' | 'Earned' | 'OD' | 'Comp Off';
 
 export interface User {
   id: string;
   code: string;
   name: string;
   role: Role;
-  department?: string;
+  designation: string;
   email?: string;
   reportingManager?: string;
   hrName?: string;
@@ -18,7 +19,7 @@ export interface LeaveRequest {
   employeeId: string;
   employeeName: string;
   employeeCode: string;
-  type: 'Casual' | 'Sick' | 'LWP' | 'Earned';
+  type: LeaveType;
   startDate: string;
   endDate: string;
   duration: string; // "Full Day" | "Half Day"
@@ -34,28 +35,47 @@ export interface LeaveRequest {
 // Initial Users from the prompt
 export const INITIAL_USERS: User[] = [
   // Admins
-  { id: '1', code: 'A0001', name: 'SAM PARKESH', role: 'Admin' },
-  { id: '2', code: 'A0002', name: 'LEO CLESTINE', role: 'Admin' },
-  { id: '3', code: 'A0003', name: 'SUJI', role: 'Admin' },
+  { id: '1', code: 'A0001', name: 'SAM PARKESH', role: 'Admin', designation: 'Director' },
+  { id: '2', code: 'A0002', name: 'LEO CLESTINE', role: 'Admin', designation: 'Manager' },
+  { id: '3', code: 'A0003', name: 'SUJI', role: 'Admin', designation: 'Manager' },
   // Employees
-  { id: '4', code: 'E0041', name: 'MOHAN RAJ C', role: 'Employee', department: 'Engineering' },
-  { id: '5', code: 'E0042', name: 'YUVARAJ S', role: 'Employee', department: 'Engineering' },
-  { id: '6', code: 'E0043', name: 'ATMAKUR RAJESH', role: 'Employee', department: 'Sales' },
-  { id: '7', code: 'E0032', name: 'SIVARAM C', role: 'Employee', department: 'Marketing' },
-  { id: '8', code: 'E0040', name: 'UMAR FAROOQUE', role: 'Employee', department: 'Operations' },
-  { id: '9', code: 'E0028', name: 'KAALIPUSHPA R', role: 'Employee', department: 'HR' },
-  { id: '10', code: 'E0035', name: 'DENNIS RAJU', role: 'Employee', department: 'Engineering' },
-  { id: '11', code: 'E0009', name: 'RANJITH', role: 'Employee', department: 'Sales' },
-  { id: '12', code: 'E0044', name: 'PRIYA P', role: 'Employee', department: 'Marketing' },
-  { id: '13', code: 'E0045', name: 'RATCHITHA', role: 'Employee', department: 'Operations' },
-  { id: '14', code: 'E0047', name: 'Samyuktha S', role: 'HR', department: 'HR' },
-  { id: '15', code: 'E0046', name: 'Rebecasuji.A', role: 'Employee', department: 'Engineering' },
-  { id: '16', code: 'E0048', name: 'DurgaDevi E', role: 'Employee', department: 'Sales' },
-  { id: '17', code: 'E0050', name: 'ZAMEELA BEGAM N.', role: 'Employee', department: 'Marketing' },
-  { id: '18', code: 'E0051', name: 'ARUN KUMAR V.', role: 'Employee', department: 'Operations' },
-  { id: '19', code: 'E0052', name: 'D K JYOTHSNA PRIYA', role: 'Employee', department: 'HR' },
-  { id: '20', code: 'E0049', name: 'P PUSHPA', role: 'HR', department: 'Engineering' },
-  { id: '21', code: '-', name: 'FAREETHA', role: 'Employee', department: 'General' },
+  { id: '4', code: 'E0041', name: 'MOHAN RAJ C', role: 'Employee', designation: 'Finance Executive' },
+  { id: '5', code: 'E0042', name: 'YUVARAJ S', role: 'Employee', designation: 'Purchase Executive' },
+  { id: '6', code: 'E0043', name: 'ATMAKUR RAJESH', role: 'Employee', designation: 'HR & Admin' },
+  { id: '7', code: 'E0032', name: 'SIVARAM C', role: 'Employee', designation: 'Multi Technician' },
+  { id: '8', code: 'E0040', name: 'UMAR FAROOQUE', role: 'Employee', designation: 'Site Engineer' },
+  { id: '9', code: 'E0028', name: 'KAALIPUSHPA R', role: 'Employee', designation: 'Quantity Analyst' },
+  { id: '10', code: 'E0035', name: 'DENNIS RAJU', role: 'Employee', designation: 'Finance Analyst' },
+  { id: '11', code: 'E0009', name: 'RANJITH', role: 'Employee', designation: 'Director/Ops Manager' },
+  { id: '12', code: 'E0044', name: 'PRIYA P', role: 'Employee', designation: 'Finance Assistant' },
+  { id: '13', code: 'E0045', name: 'RATCHITHA', role: 'Employee', designation: 'Business Development Executive' },
+  { id: '14', code: 'E0047', name: 'Samyuktha S', role: 'HR', designation: 'HR - Intern' },
+  { id: '15', code: 'E0046', name: 'Rebecasuji.A', role: 'Employee', designation: 'Software Developer Intern' },
+  { id: '16', code: 'E0048', name: 'DurgaDevi E', role: 'Employee', designation: 'Software Developer Intern' },
+  { id: '17', code: 'E0050', name: 'ZAMEELA BEGAM N.', role: 'Employee', designation: 'Finance Intern' },
+  { id: '18', code: 'E0051', name: 'ARUN KUMAR V.', role: 'Employee', designation: 'Finance Intern' },
+  { id: '19', code: 'E0052', name: 'D K JYOTHSNA PRIYA', role: 'Employee', designation: 'Software Developer Intern' },
+  { id: '20', code: 'E0049', name: 'P PUSHPA', role: 'HR', designation: 'HR & Admin' },
+  { id: '21', code: '-', name: 'FAREETHA', role: 'Employee', designation: 'House Keeping' },
+];
+
+// Public holidays for 2025
+export const HOLIDAYS_2025 = [
+  { date: '2025-01-26', name: 'Republic Day' },
+  { date: '2025-03-08', name: 'Maha Shivaratri' },
+  { date: '2025-03-29', name: 'Holi' },
+  { date: '2025-04-14', name: 'Ambedkar Jayanti' },
+  { date: '2025-04-18', name: 'Good Friday' },
+  { date: '2025-05-23', name: 'Buddha Purnima' },
+  { date: '2025-08-15', name: 'Independence Day' },
+  { date: '2025-08-27', name: 'Janmashtami' },
+  { date: '2025-09-16', name: 'Milad un-Nabi' },
+  { date: '2025-10-02', name: 'Gandhi Jayanti' },
+  { date: '2025-10-20', name: 'Dussehra' },
+  { date: '2025-10-30', name: 'Diwali' },
+  { date: '2025-11-01', name: 'Diwali (Day 2)' },
+  { date: '2025-11-15', name: 'Guru Nanak Jayanti' },
+  { date: '2025-12-25', name: 'Christmas' },
 ];
 
 export const INITIAL_LEAVES: LeaveRequest[] = [

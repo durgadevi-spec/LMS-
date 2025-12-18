@@ -35,6 +35,7 @@ export function Sidebar() {
     { icon: Building2, label: 'Departments', path: '/admin/departments' },
     { icon: Users, label: 'Employees', path: '/admin/employees' },
     { icon: BarChart3, label: 'Analytics', path: '/admin/charts' },
+    { icon: FileText, label: 'Reports', path: '/reports' },
   ];
 
   const hrLinks = [
@@ -43,6 +44,7 @@ export function Sidebar() {
     { icon: FileText, label: 'Apply Leave', path: '/employee/apply-leave' },
     { icon: History, label: 'Leave History', path: '/employee/history' },
     { icon: User, label: 'Profile', path: '/employee/profile' },
+    { icon: BarChart3, label: 'Reports', path: '/reports' },
   ];
 
   const links = user?.role === 'Admin' ? adminLinks : (user?.role === 'HR' ? hrLinks : employeeLinks);

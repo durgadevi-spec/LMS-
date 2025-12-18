@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertCircle } from 'lucide-react';
 
 const leaveSchema = z.object({
-  type: z.enum(['Casual', 'Sick', 'LWP', 'Earned']),
+  type: z.enum(['Casual', 'Sick', 'LWP', 'Earned', 'OD', 'Comp Off']),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
   duration: z.enum(['Full Day', 'Half Day']),
@@ -107,6 +107,8 @@ export default function ApplyLeave() {
                 <SelectContent className="bg-card border-white/10 text-white">
                   <SelectItem value="Casual">Casual Leave</SelectItem>
                   <SelectItem value="Sick">Sick Leave</SelectItem>
+                  <SelectItem value="OD">On Duty (OD)</SelectItem>
+                  <SelectItem value="Comp Off">Comp Off</SelectItem>
                   <SelectItem value="LWP">Leave Without Pay (LWP)</SelectItem>
                   <SelectItem value="Earned">Earned Leave</SelectItem>
                 </SelectContent>

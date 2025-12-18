@@ -10,6 +10,7 @@ import AdminDashboard from '@/pages/admin/Dashboard';
 import ViewLeaves from '@/pages/admin/ViewLeaves';
 import Charts from '@/pages/admin/Charts';
 import Employees from '@/pages/admin/Employees';
+import Reports from '@/pages/Reports';
 
 function ProtectedRoute({ component: Component, role }: { component: any, role?: 'Admin' | 'Employee' | 'HR' }) {
   const { user, isLoading } = useAuth();
@@ -87,6 +88,11 @@ function AppRoutes() {
       </Route>
        <Route path="/admin/charts">
          <ProtectedRoute component={Charts} role="Admin" />
+      </Route>
+
+      {/* Reports - Accessible by Admin and HR */}
+      <Route path="/reports">
+        <ProtectedRoute component={Reports} role="Admin" />
       </Route>
 
       <Route>
