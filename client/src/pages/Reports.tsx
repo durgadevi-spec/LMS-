@@ -5,13 +5,83 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { Search, Download } from 'lucide-react';
+import { Search, Download, Mail, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Reports() {
   const leaves = getStoredLeaves();
   const users = getStoredUsers();
   const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
+
+  const exportToCSV = () => {
+    try {
+      const employees = users.filter(u => u.role === 'Employee');
+      const reportData = employees.map(user => {
+        const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
+        const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
+        const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
+        const odCount = userLeaves.filter(l => l.type === 'OD').length;
+        const compOffCount = userLeaves.filter(l => l.type === 'Comp Off').length;
+        const lwpCount = userLeaves.filter(l => l.type === 'LWP').length;
+        const earnedCount = userLeaves.filter(l => l.type === 'Earned').length;
+        
+        return {
+          name: user.name,
+          code: user.code,
+          designation: user.designation,
+          casual: casualCount,
+          sick: sickCount,
+          od: odCount,
+          compOff: compOffCount,
+          lwp: lwpCount,
+          earned: earnedCount,
+          total: casualCount + sickCount + odCount + compOffCount + lwpCount + earnedCount
+        };
+      });
+
+      let csv = 'Employee Name,Employee Code,Designation,Casual,Sick,OD,Comp Off,LWP,Earned,Total\n';
+      reportData.forEach(row => {
+        csv += `"${row.name}","${row.code}","${row.designation}",${row.casual},${row.sick},${row.od},${row.compOff},${row.lwp},${row.earned},${row.total}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Leave-Report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Success",
+        description: "Report exported successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to export report",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const shareViaEmail = () => {
+    toast({
+      title: "Email Sharing",
+      description: "To enable email sharing, please upgrade to full-stack. This requires backend integration.",
+    });
+  };
+
+  const shareViaWhatsApp = () => {
+    toast({
+      title: "WhatsApp Sharing",
+      description: "To enable WhatsApp sharing, please upgrade to full-stack. This requires backend integration.",
+    });
+  };
 
   // Build a comprehensive report with all leave types
   const reportData = users
@@ -61,9 +131,31 @@ export default function Reports() {
           <h2 className="text-3xl font-display font-bold text-white mb-2">Leave & OD Reports</h2>
           <p className="text-muted-foreground">Comprehensive view of all employee leaves and on-duty requests</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-          <Download className="w-4 h-4 mr-2" /> Export Report
-        </Button>
+        <div className="flex gap-3 flex-wrap">
+          <Button 
+            onClick={exportToCSV}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+            data-testid="button-export-csv"
+          >
+            <Download className="w-4 h-4 mr-2" /> Export CSV
+          </Button>
+          <Button 
+            onClick={shareViaEmail}
+            variant="outline" 
+            className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+            data-testid="button-share-email"
+          >
+            <Mail className="w-4 h-4 mr-2" /> Email
+          </Button>
+          <Button 
+            onClick={shareViaWhatsApp}
+            variant="outline" 
+            className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+            data-testid="button-share-whatsapp"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
+          </Button>
+        </div>
       </div>
 
       <div className="relative w-full max-w-md">
