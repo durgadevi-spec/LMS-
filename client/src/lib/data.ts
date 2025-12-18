@@ -78,6 +78,27 @@ export const HOLIDAYS_2025 = [
   { date: '2025-12-25', name: 'Christmas' },
 ];
 
+// Public holidays for 2026
+export const HOLIDAYS_2026 = [
+  { date: '2026-01-26', name: 'Republic Day' },
+  { date: '2026-02-28', name: 'Maha Shivaratri' },
+  { date: '2026-03-17', name: 'Holi' },
+  { date: '2026-04-14', name: 'Ambedkar Jayanti' },
+  { date: '2026-04-10', name: 'Good Friday' },
+  { date: '2026-05-15', name: 'Buddha Purnima' },
+  { date: '2026-08-15', name: 'Independence Day' },
+  { date: '2026-08-16', name: 'Janmashtami' },
+  { date: '2026-09-05', name: 'Milad un-Nabi' },
+  { date: '2026-10-02', name: 'Gandhi Jayanti' },
+  { date: '2026-10-09', name: 'Dussehra' },
+  { date: '2026-10-19', name: 'Diwali' },
+  { date: '2026-10-20', name: 'Diwali (Day 2)' },
+  { date: '2026-11-04', name: 'Guru Nanak Jayanti' },
+  { date: '2026-12-25', name: 'Christmas' },
+];
+
+export const ALL_HOLIDAYS = [...HOLIDAYS_2025, ...HOLIDAYS_2026];
+
 export const INITIAL_LEAVES: LeaveRequest[] = [
   {
     id: '101',

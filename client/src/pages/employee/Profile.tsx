@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { User as UserIcon, Mail, Briefcase, Building, AlertCircle, Calendar } from 'lucide-react';
 import { getStoredLeaves, getLeaveBalance } from '@/lib/storage';
-import { HOLIDAYS_2025 } from '@/lib/data';
+import { ALL_HOLIDAYS } from '@/lib/data';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -21,14 +21,18 @@ export default function Profile() {
   };
   
   const isHoliday = (dateStr: string) => {
-    return HOLIDAYS_2025.some(h => h.date === dateStr);
+    return ALL_HOLIDAYS.some(h => h.date === dateStr);
   };
   
   const isWorked = (dateStr: string) => {
     return workedDates.includes(dateStr);
   };
   
-  const upcomingHolidays = HOLIDAYS_2025.slice(0, 5);
+  // Get upcoming holidays (from current date onwards)
+  const today = new Date();
+  const upcomingHolidays = ALL_HOLIDAYS
+    .filter(h => new Date(h.date) > today)
+    .slice(0, 8);
 
   // Mock calculation for worked days
   // In a real app, this would calculate actual working days minus leaves
