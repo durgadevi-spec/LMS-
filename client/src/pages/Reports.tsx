@@ -14,6 +14,7 @@ export default function Reports() {
   const users = getStoredUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [searchDepartment, setSearchDepartment] = useState('');
   const { toast } = useToast();
 
   const exportToCSV = () => {
@@ -111,8 +112,9 @@ export default function Reports() {
     });
 
   const filteredData = reportData.filter(item =>
-    item.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.user.code.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     item.user.code.toLowerCase().includes(searchTerm.toLowerCase())) &&
+    (!searchDepartment || item.user.designation.toLowerCase().includes(searchDepartment.toLowerCase()))
   );
 
   const getStatusColor = (type: string) => {
@@ -163,13 +165,20 @@ export default function Reports() {
         <div className="relative w-full md:flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
-            placeholder="Search Employee..." 
+            placeholder="Search Employee Name or Code..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 bg-black/20 border-white/10 text-white focus:border-primary/50"
             data-testid="input-search-employee"
           />
         </div>
+        <Input 
+          placeholder="Filter by Designation..." 
+          value={searchDepartment}
+          onChange={(e) => setSearchDepartment(e.target.value)}
+          className="bg-black/20 border-white/10 text-white focus:border-primary/50"
+          data-testid="input-search-designation"
+        />
         <Input 
           type="date" 
           value={selectedDate}

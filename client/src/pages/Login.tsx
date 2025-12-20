@@ -7,8 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Lock } from 'lucide-react';
 import gsap from 'gsap';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
 
 import logoUrl from '@assets/Screenshot_2025-10-15_183825_1765652253224.png';
 
@@ -24,6 +33,10 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -74,6 +87,47 @@ export default function Login() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleResetPassword = () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "All fields are required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // In a real app, this would validate against the current password
+    toast({
+      title: "Success",
+      description: "Password reset successfully! Please login with your new password.",
+      className: "bg-green-500/10 border-green-500/20 text-white"
+    });
+
+    setOldPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setForgotPasswordOpen(false);
   };
 
   if (isLoading) return null;
@@ -137,7 +191,12 @@ export default function Login() {
               </Button>
               
               <div className="text-center mt-4 space-y-2">
-                <button type="button" className="text-primary hover:text-primary/80 text-xs font-medium transition-colors" data-testid="button-forgot-password">
+                <button 
+                  type="button" 
+                  onClick={() => setForgotPasswordOpen(true)}
+                  className="text-primary hover:text-primary/80 text-xs font-medium transition-colors" 
+                  data-testid="button-forgot-password"
+                >
                   Forgot Password?
                 </button>
                 <p className="text-xs text-muted-foreground">Restricted Access. Authorized Personnel Only.</p>
@@ -146,6 +205,69 @@ export default function Login() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
+        <DialogContent className="bg-card border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-primary" />
+              Reset Your Password
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-gray-300">Old Password</Label>
+              <Input
+                type="password"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                placeholder="Enter your current password"
+                className="bg-black/20 border-white/10 text-white"
+                data-testid="input-old-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">New Password</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter your new password"
+                className="bg-black/20 border-white/10 text-white"
+                data-testid="input-new-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">Confirm Password</Label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your new password"
+                className="bg-black/20 border-white/10 text-white"
+                data-testid="input-confirm-password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setForgotPasswordOpen(false)}
+              className="text-gray-300"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleResetPassword}
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-reset-password"
+            >
+              Reset Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

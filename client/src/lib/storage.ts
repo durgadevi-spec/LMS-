@@ -52,6 +52,23 @@ export function addUser(user: User) {
   return users;
 }
 
+export function updateUser(id: string, updatedData: Partial<User>) {
+  const users = getStoredUsers();
+  const index = users.findIndex(u => u.id === id);
+  if (index !== -1) {
+    users[index] = { ...users[index], ...updatedData };
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+  return users;
+}
+
+export function deleteUser(id: string) {
+  const users = getStoredUsers();
+  const filtered = users.filter(u => u.id !== id);
+  localStorage.setItem(USERS_KEY, JSON.stringify(filtered));
+  return filtered;
+}
+
 export interface LeaveBalance {
   casual: { total: number; used: number; remaining: number };
   sick: { total: number; used: number; remaining: number };
