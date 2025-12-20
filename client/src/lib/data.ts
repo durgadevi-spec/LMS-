@@ -57,6 +57,7 @@ export const INITIAL_USERS: User[] = [
   { id: '19', code: 'E0052', name: 'D K JYOTHSNA PRIYA', role: 'Employee', designation: 'Software Developer Intern' },
   { id: '20', code: 'E0049', name: 'P PUSHPA', role: 'HR', designation: 'HR & Admin' },
   { id: '21', code: '-', name: 'FAREETHA', role: 'Employee', designation: 'House Keeping' },
+  { id: '22', code: 'E0053', name: 'S.NAVEEN KUMAR', role: 'Employee', designation: 'Technical Support' },
 ];
 
 // Public holidays for 2025
