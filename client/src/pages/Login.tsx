@@ -92,8 +92,8 @@ export default function Login() {
 
         <Card className="bg-card/50 backdrop-blur-xl border-white/10 shadow-2xl">
           <CardHeader className="space-y-1 login-element">
-            <CardTitle className="text-2xl text-center text-white">Sign In</CardTitle>
-            <CardDescription className="text-center">Enter your Employee Code to access the portal</CardDescription>
+            <CardTitle className="text-3xl text-center text-white font-display mb-2">Welcome to LMS Application</CardTitle>
+            <CardDescription className="text-center text-gray-300">Knockturn Private Limited Leave Management System</CardDescription>
           </CardHeader>
           <CardContent className="login-element">
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -136,7 +136,10 @@ export default function Login() {
                 {form.formState.isSubmitting ? "Authenticating..." : "LOGIN TO DASHBOARD"}
               </Button>
               
-              <div className="text-center mt-4">
+              <div className="text-center mt-4 space-y-2">
+                <button type="button" className="text-primary hover:text-primary/80 text-xs font-medium transition-colors" data-testid="button-forgot-password">
+                  Forgot Password?
+                </button>
                 <p className="text-xs text-muted-foreground">Restricted Access. Authorized Personnel Only.</p>
               </div>
             </form>

@@ -67,6 +67,11 @@ export default function ViewLeaves() {
         </div>
       </div>
 
+      {/* Note for OD/Comp Off dual approval */}
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 text-sm text-blue-300">
+        <p className="font-medium">⚠️ Note: OD and Comp Off leaves require approval from both HR and Admin before they are finalized.</p>
+      </div>
+
       <div className="grid grid-cols-1 gap-4">
         {filteredLeaves.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground bg-card/20 rounded-lg border border-white/5">
@@ -105,6 +110,8 @@ export default function ViewLeaves() {
                     <Button 
                       onClick={() => handleAction(leave.id, 'Approved')}
                       className="flex-1 w-full bg-green-600/20 hover:bg-green-600/30 text-green-500 border border-green-600/20 hover:border-green-600/50"
+                      data-testid={`button-approve-${leave.id}`}
+                      title={['OD', 'Comp Off'].includes(leave.type) ? 'Requires approval from both HR and Admin' : ''}
                     >
                       <Check className="w-4 h-4 mr-2" /> Approve
                     </Button>
@@ -114,6 +121,7 @@ export default function ViewLeaves() {
                         <Button 
                           variant="outline"
                           className="flex-1 w-full bg-red-600/10 hover:bg-red-600/20 text-red-500 border-red-600/20 hover:border-red-600/50"
+                          data-testid={`button-reject-${leave.id}`}
                         >
                           <X className="w-4 h-4 mr-2" /> Reject
                         </Button>

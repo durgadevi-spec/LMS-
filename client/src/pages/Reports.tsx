@@ -13,6 +13,7 @@ export default function Reports() {
   const leaves = getStoredLeaves();
   const users = getStoredUsers();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const { toast } = useToast();
 
   const exportToCSV = () => {
@@ -158,13 +159,23 @@ export default function Reports() {
         </div>
       </div>
 
-      <div className="relative w-full max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <div className="flex flex-col md:flex-row gap-4 w-full">
+        <div className="relative w-full md:flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input 
+            placeholder="Search Employee..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-black/20 border-white/10 text-white focus:border-primary/50"
+            data-testid="input-search-employee"
+          />
+        </div>
         <Input 
-          placeholder="Search Employee..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-black/20 border-white/10 text-white focus:border-primary/50"
+          type="date" 
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="bg-black/20 border-white/10 text-white focus:border-primary/50"
+          data-testid="input-filter-date"
         />
       </div>
 
@@ -261,7 +272,7 @@ export default function Reports() {
       {/* Detailed Leave Listing */}
       <Card className="bg-card/40 backdrop-blur border-white/10">
         <CardHeader>
-          <CardTitle className="text-white">All Approved Leaves</CardTitle>
+          <CardTitle className="text-white">All Approved Leaves {selectedDate && `on ${format(new Date(selectedDate), 'MMM dd, yyyy')}`}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -279,9 +290,13 @@ export default function Reports() {
               </TableHeader>
               <TableBody>
                 {leaves
-                  .filter(l => l.status === 'Approved' && searchTerm === '' || l.employeeName.toLowerCase().includes(searchTerm.toLowerCase()))
+                  .filter(l => {
+                    const matchesSearch = searchTerm === '' || l.employeeName.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesDate = !selectedDate || (l.startDate <= selectedDate && l.endDate >= selectedDate);
+                    return l.status === 'Approved' && matchesSearch && matchesDate;
+                  })
                   .map((leave) => (
-                    <TableRow key={leave.id} className="hover:bg-white/5 border-white/10 transition-colors">
+                    <TableRow key={leave.id} className="hover:bg-white/5 border-white/10 transition-colors" data-testid={`row-leave-${leave.id}`}>
                       <TableCell className="font-medium text-white">{leave.employeeName}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={getStatusColor(leave.type)}>
