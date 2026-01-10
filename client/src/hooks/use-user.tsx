@@ -17,11 +17,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    // Check local storage for session
-    const storedUser = localStorage.getItem("knockturn_user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Do not persist user to localStorage; session is in-memory only.
     setIsLoading(false);
   }, []);
 
@@ -33,7 +29,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     if (foundUser) {
       setUser(foundUser);
-      localStorage.setItem("knockturn_user", JSON.stringify(foundUser));
+      // Do not persist to localStorage in production; rely on DB session
       
       // Redirect based on role
       if (foundUser.role === 'Admin') {
@@ -50,7 +46,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("knockturn_user");
+    // session cleared in memory
     setLocation("/");
   };
 

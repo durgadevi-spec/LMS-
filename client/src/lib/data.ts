@@ -81,20 +81,16 @@ export const HOLIDAYS_2025 = [
 
 // Public holidays for 2026
 export const HOLIDAYS_2026 = [
+  { date: '2026-01-01', name: 'New Year' },
+  { date: '2026-01-15', name: 'Pongal' },
+  { date: '2026-01-16', name: 'Thiruvalluvar Day' },
   { date: '2026-01-26', name: 'Republic Day' },
-  { date: '2026-02-28', name: 'Maha Shivaratri' },
-  { date: '2026-03-17', name: 'Holi' },
-  { date: '2026-04-14', name: 'Ambedkar Jayanti' },
-  { date: '2026-04-10', name: 'Good Friday' },
-  { date: '2026-05-15', name: 'Buddha Purnima' },
+  { date: '2026-05-01', name: 'May Day' },
   { date: '2026-08-15', name: 'Independence Day' },
-  { date: '2026-08-16', name: 'Janmashtami' },
-  { date: '2026-09-05', name: 'Milad un-Nabi' },
+  { date: '2026-09-14', name: 'Ganesh Chaturthi' },
   { date: '2026-10-02', name: 'Gandhi Jayanti' },
-  { date: '2026-10-09', name: 'Dussehra' },
-  { date: '2026-10-19', name: 'Diwali' },
-  { date: '2026-10-20', name: 'Diwali (Day 2)' },
-  { date: '2026-11-04', name: 'Guru Nanak Jayanti' },
+  { date: '2026-10-19', name: 'Ayudha Pooja' },
+  { date: '2026-11-08', name: 'Diwali' },
   { date: '2026-12-25', name: 'Christmas' },
 ];
 

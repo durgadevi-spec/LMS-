@@ -1,17 +1,40 @@
+import { useEffect, useState } from 'react';
 import { getStoredLeaves, getStoredUsers } from '@/lib/storage';
+import { LeaveRequest, User } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Building2, Clock, CheckCircle2, XCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 export default function AdminDashboard() {
-  const leaves = getStoredLeaves();
-  const users = getStoredUsers();
-  
+  const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const l = await getStoredLeaves();
+        const u = getStoredUsers();
+        if (!mounted) return;
+        setLeaves(l);
+        setUsers(u);
+      } catch (err) {
+        console.error('Error loading dashboard data', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
   const pending = leaves.filter(l => l.status === 'Pending').length;
   const approved = leaves.filter(l => l.status === 'Approved').length;
   const rejected = leaves.filter(l => l.status === 'Rejected').length;
   const employees = users.filter(u => u.role === 'Employee').length;
-  const departments = new Set(users.map(u => u.department).filter(Boolean)).size;
+  const departments = new Set(users.map(u => (u as any).department).filter(Boolean)).size;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

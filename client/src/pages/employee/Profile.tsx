@@ -4,29 +4,30 @@ import { Progress } from '@/components/ui/progress';
 import { User as UserIcon, Mail, Briefcase, Building, AlertCircle, Calendar } from 'lucide-react';
 import { getStoredLeaves, getLeaveBalance } from '@/lib/storage';
 import { ALL_HOLIDAYS } from '@/lib/data';
+import { useState, useEffect } from 'react';
 
 export default function Profile() {
   const { user } = useAuth();
+  const [balance, setBalance] = useState<any>(null);
+  const [approvedLeaves, setApprovedLeaves] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  if (!user) return null;
-
-  const balance = getLeaveBalance(user.code);
+  useEffect(() => {
+    const loadData = async () => {
+      if (user) {
+        const leaveBalance = await getLeaveBalance(user.code);
+        setBalance(leaveBalance);
+        
+        const allLeaves = await getStoredLeaves();
+        const leaves = allLeaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
+        setApprovedLeaves(leaves);
+      }
+      setLoading(false);
+    };
+    loadData();
+  }, [user]);
   
-  // Mock data for worked dates (would come from attendance system in real app)
-  const workedDates = ['2025-01-27', '2025-01-28', '2025-01-29', '2025-01-30', '2025-01-31'];
-  
-  const isSunday = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.getDay() === 0;
-  };
-  
-  const isHoliday = (dateStr: string) => {
-    return ALL_HOLIDAYS.some(h => h.date === dateStr);
-  };
-  
-  const isWorked = (dateStr: string) => {
-    return workedDates.includes(dateStr);
-  };
+  if (!user || loading) return null;
   
   // Get upcoming holidays (from current date onwards)
   const today = new Date();
@@ -34,16 +35,15 @@ export default function Profile() {
     .filter(h => new Date(h.date) > today)
     .slice(0, 8);
 
-  // Mock calculation for worked days
-  // In a real app, this would calculate actual working days minus leaves
-  const totalWorkingDays = 30; // Assuming a 30-day month for simplicity
-  const currentMonthLeaves = getStoredLeaves()
-    .filter(l => l.employeeCode === user.code && l.status === 'Approved')
-    .length; // Simplified count (1 leave request = 1 day for this mock)
+  // Calculate worked days (total business days - holidays - approved leaves)
+  const totalWorkingDays = 30; // Days in current month
+  const holidaysCount = ALL_HOLIDAYS.length;
+  const leavesCount = approvedLeaves.length;
   
-  const workedDays = 22; // Hardcoded mock value as per typical scenario, or 25 - currentMonthLeaves
+  const workedDays = Math.max(0, totalWorkingDays - holidaysCount - leavesCount);
   const targetDays = 25;
   const isBelowTarget = workedDays < targetDays;
+  const attendanceRate = Math.round((workedDays / targetDays) * 100);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -93,12 +93,12 @@ export default function Profile() {
 
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
               <div>
-                <p className="text-sm text-muted-foreground">Leaves this Month</p>
-                <p className="text-2xl font-bold text-white">{currentMonthLeaves}</p>
+                <p className="text-sm text-muted-foreground">Approved Leaves</p>
+                <p className="text-2xl font-bold text-white">{leavesCount}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Attendance Rate</p>
-                <p className="text-2xl font-bold text-primary">92%</p>
+                <p className="text-2xl font-bold text-primary">{attendanceRate}%</p>
               </div>
             </div>
           </CardContent>

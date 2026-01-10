@@ -11,7 +11,8 @@ import {
   CheckSquare, 
   XSquare, 
   BarChart3,
-  Building2
+  Building2,
+  Lock
 } from 'lucide-react';
 
 import logoUrl from '@assets/Screenshot_2025-10-15_183825_1765652253224.png';
@@ -25,6 +26,7 @@ export function Sidebar() {
   const employeeLinks = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/employee/dashboard' },
     { icon: FileText, label: 'Apply Leave', path: '/employee/apply-leave' },
+    { icon: Lock, label: 'Permission', path: '/employee/permission' },
     { icon: History, label: 'Leave History', path: '/employee/history' },
     { icon: User, label: 'Profile', path: '/employee/profile' },
   ];
@@ -32,6 +34,7 @@ export function Sidebar() {
   const adminLinks = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: CheckSquare, label: 'View Leaves', path: '/admin/view-leaves' },
+    { icon: Lock, label: 'View Permissions', path: '/admin/view-permissions' },
     { icon: Building2, label: 'Departments', path: '/admin/departments' },
     { icon: Users, label: 'Employees', path: '/admin/employees' },
     { icon: BarChart3, label: 'Analytics', path: '/admin/charts' },
@@ -41,6 +44,7 @@ export function Sidebar() {
   const hrLinks = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/employee/dashboard' },
     { icon: CheckSquare, label: 'Approve Leaves', path: '/admin/view-leaves' },
+    { icon: Lock, label: 'View Permissions', path: '/admin/view-permissions' },
     { icon: FileText, label: 'Apply Leave', path: '/employee/apply-leave' },
     { icon: History, label: 'Leave History', path: '/employee/history' },
     { icon: User, label: 'Profile', path: '/employee/profile' },

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getStoredLeaves, updateLeaveStatus } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,16 +23,31 @@ import { Textarea } from '@/components/ui/textarea';
 export default function ViewLeaves() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [leaves, setLeaves] = useState(getStoredLeaves().filter(l => l.status === 'Pending'));
+  const [leaves, setLeaves] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [selectedLeaveId, setSelectedLeaveId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleAction = (id: string, status: 'Approved' | 'Rejected', reason?: string) => {
-    if (!user) return;
+  useEffect(() => {
+    const loadLeaves = async () => {
+      const allLeaves = await getStoredLeaves();
+      setLeaves(allLeaves.filter(l => l.status === 'Pending'));
+      setLoading(false);
+    };
+    loadLeaves();
+  }, []);
+
+  const handleAction = async (id: string, status: 'Approved' | 'Rejected', reason?: string) => {
+    console.log('ViewLeaves.handleAction', { id, status, reason, user });
+    if (!user) {
+      console.warn('No user in context; aborting action');
+      return;
+    }
     
-    updateLeaveStatus(id, status, `${user.code} (${user.name})`, reason);
-    setLeaves(getStoredLeaves().filter(l => l.status === 'Pending'));
+    await updateLeaveStatus(id, status, `${user.code} (${user.name})`, reason);
+    const allLeaves = await getStoredLeaves();
+    setLeaves(allLeaves.filter(l => l.status === 'Pending'));
     
     toast({
       title: `Leave ${status}`,
@@ -99,22 +115,58 @@ export default function ViewLeaves() {
                     </div>
                     
                     {leave.attachment && (
-                       <div className="flex items-center gap-2 text-xs text-primary mt-2 cursor-pointer hover:underline">
-                         <FileText className="w-3 h-3" />
-                         View Attachment
-                       </div>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <div role="button" className="flex items-center gap-2 text-xs text-primary mt-2 cursor-pointer hover:underline">
+                            <FileText className="w-3 h-3" />
+                            View Attachment
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="bg-card/95 border-white/10 w-[90vw] max-w-4xl">
+                          <DialogHeader>
+                            <DialogTitle className="text-white">Attachment Preview</DialogTitle>
+                            <DialogDescription className="text-sm text-gray-400">Preview the uploaded attachment</DialogDescription>
+                          </DialogHeader>
+                          <div className="py-4">
+                            {leave.attachment.startsWith('data:application/pdf') ? (
+                              <iframe src={leave.attachment} className="w-full h-[70vh] border rounded" title="attachment-pdf" />
+                            ) : (
+                              <img src={leave.attachment} alt="attachment" className="mx-auto max-h-[70vh] object-contain" />
+                            )}
+                          </div>
+                          <DialogFooter>
+                            <a href={leave.attachment} download className="text-sm text-primary hover:underline">Download</a>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     )}
                   </div>
 
                   <div className="flex items-center gap-3 md:flex-col md:justify-center min-w-[150px]">
-                    <Button 
-                      onClick={() => handleAction(leave.id, 'Approved')}
-                      className="flex-1 w-full bg-green-600/20 hover:bg-green-600/30 text-green-500 border border-green-600/20 hover:border-green-600/50"
-                      data-testid={`button-approve-${leave.id}`}
-                      title={['OD', 'Comp Off'].includes(leave.type) ? 'Requires approval from both HR and Admin' : ''}
-                    >
-                      <Check className="w-4 h-4 mr-2" /> Approve
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          onClick={() => setSelectedLeaveId(leave.id)}
+                          className="flex-1 w-full bg-green-600/20 hover:bg-green-600/30 text-green-500 border border-green-600/20 hover:border-green-600/50"
+                          data-testid={`button-approve-${leave.id}`}
+                          title={['OD', 'Comp Off'].includes(leave.type) ? 'Requires approval from both HR and Admin' : ''}
+                        >
+                          <Check className="w-4 h-4 mr-2" /> Approve
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-card/95 border-white/10">
+                        <DialogHeader>
+                          <DialogTitle className="text-white">Approve Leave Request</DialogTitle>
+                          <DialogDescription className="text-sm text-gray-400">Are you sure you want to approve this leave request?</DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button variant="outline" className="border-white/10 hover:bg-white/5">Cancel</Button>
+                          <DialogClose asChild>
+                            <Button onClick={() => handleAction(leave.id, 'Approved')} className="bg-green-600 hover:bg-green-700 text-white">Confirm Approval</Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                     
                     <Dialog>
                       <DialogTrigger asChild>
@@ -144,16 +196,20 @@ export default function ViewLeaves() {
                           />
                         </div>
                         <DialogFooter>
-                          <Button 
-                            onClick={() => handleAction(leave.id, 'Rejected', rejectReason)}
-                            disabled={!rejectReason}
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                          >
-                            Confirm Rejection
-                          </Button>
+                          <Button variant="outline" className="border-white/10 hover:bg-white/5">Cancel</Button>
+                          <DialogClose asChild>
+                            <Button 
+                              onClick={() => handleAction(leave.id, 'Rejected', rejectReason)}
+                              disabled={!rejectReason}
+                              className="bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              Confirm Rejection
+                            </Button>
+                          </DialogClose>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
+                    
                   </div>
                 </div>
               </CardContent>

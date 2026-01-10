@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Role } from '@/lib/data';
-import { getStoredUsers } from '@/lib/storage';
+import { supabase } from '@/lib/supabaseClient';
 import { useLocation } from 'wouter';
 
 interface AuthContextType {
@@ -18,31 +18,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('knockturn_current_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Do not persist user to localStorage; keep session in memory only.
     setIsLoading(false);
   }, []);
 
-  const login = async (code: string) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const users = getStoredUsers();
-    const foundUser = users.find(u => u.code === code);
-    
-    if (foundUser) {
+  const login = async (code: string, password?: string) => {
+    // Query Supabase users table for matching code and optional password
+    try {
+      const normalizedCode = code.toString().trim();
+
+      // Try to find existing user by username
+      const selectQuery = supabase.from('users').select('*').eq('username', normalizedCode).limit(1);
+      if (password) selectQuery.eq('password', password);
+      const { data, error } = await selectQuery.maybeSingle();
+
+      if (error) {
+        console.error('Supabase login error', error);
+        return false;
+      }
+
+      let dbUser: any = data;
+
+      // If user not found, create a minimal employee row so employee logins persist to DB
+      if (!dbUser) {
+        const insertPayload = {
+          user_id: normalizedCode,
+          username: normalizedCode,
+          role: 'employee',
+          password: password ?? null,
+        };
+
+        // Use upsert to avoid duplicate-key errors when multiple clients
+        // attempt to create the same user concurrently.
+        const { data: inserted, error: insertErr } = await supabase
+          .from('users')
+          .upsert(insertPayload, { onConflict: 'user_id' })
+          .select()
+          .maybeSingle();
+
+        if (insertErr) {
+          console.error('Supabase upsert user error', insertErr);
+          return false;
+        }
+        dbUser = inserted;
+      }
+
+      // Map DB role (which may be lowercase) to app Role type
+      const dbRole = (dbUser?.role || 'employee').toString().toLowerCase();
+      const mappedRole: Role = dbRole === 'admin' ? 'Admin' : dbRole === 'hr' ? 'HR' : 'Employee';
+
+      const foundUser: User = {
+        id: String(dbUser?.user_id || dbUser?.username || ''),
+        code: dbUser?.username || dbUser?.user_id || '',
+        name: dbUser?.name || dbUser?.username || '',
+        role: mappedRole,
+        designation: dbUser?.designation || '',
+        email: dbUser?.email || undefined,
+      };
+
       setUser(foundUser);
-      localStorage.setItem('knockturn_current_user', JSON.stringify(foundUser));
       return true;
+    } catch (err) {
+      console.error('Login failed', err);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('knockturn_current_user');
+    // Do not use localStorage; session cleared in memory.
     setLocation('/');
   };
 

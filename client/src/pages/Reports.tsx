@@ -3,19 +3,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import * as XLSX from 'xlsx';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search, Download, Mail, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Reports() {
-  const leaves = getStoredLeaves();
+  const [leaves, setLeaves] = useState<any[]>([]);
   const users = getStoredUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [searchDepartment, setSearchDepartment] = useState('');
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadLeaves = async () => {
+      const allLeaves = await getStoredLeaves();
+      setLeaves(allLeaves);
+      setLoading(false);
+    };
+    loadLeaves();
+  }, []);
 
   const exportToCSV = () => {
     try {
@@ -68,6 +79,52 @@ export default function Reports() {
         description: "Failed to export report",
         variant: "destructive"
       });
+    }
+  };
+
+  const exportToExcel = () => {
+    try {
+      const employees = users.filter(u => u.role === 'Employee');
+      const reportData = employees.map(user => {
+        const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
+        const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
+        const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
+        const odCount = userLeaves.filter(l => l.type === 'OD').length;
+        const compOffCount = userLeaves.filter(l => l.type === 'Comp Off').length;
+        const lwpCount = userLeaves.filter(l => l.type === 'LWP').length;
+        const earnedCount = userLeaves.filter(l => l.type === 'Earned').length;
+        return {
+          EmployeeName: user.name,
+          EmployeeCode: user.code,
+          Designation: user.designation,
+          Casual: casualCount,
+          Sick: sickCount,
+          OD: odCount,
+          CompOff: compOffCount,
+          LWP: lwpCount,
+          Earned: earnedCount,
+          Total: casualCount + sickCount + odCount + compOffCount + lwpCount + earnedCount
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(reportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Summary');
+
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Leave-Report-${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast({ title: 'Success', description: 'Excel report exported successfully!' });
+    } catch (err) {
+      toast({ title: 'Error', description: 'Failed to export Excel report', variant: 'destructive' });
     }
   };
 
@@ -136,11 +193,11 @@ export default function Reports() {
         </div>
         <div className="flex gap-3 flex-wrap">
           <Button 
-            onClick={exportToCSV}
+            onClick={exportToExcel}
             className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]"
-            data-testid="button-export-csv"
+            data-testid="button-export-excel"
           >
-            <Download className="w-4 h-4 mr-2" /> Export CSV
+            <Download className="w-4 h-4 mr-2" /> Export Excel
           </Button>
           <Button 
             onClick={shareViaEmail}

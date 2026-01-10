@@ -23,7 +23,7 @@ import logoUrl from '@assets/Screenshot_2025-10-15_183825_1765652253224.png';
 
 const loginSchema = z.object({
   code: z.string().min(1, "Employee Code is required"),
-  password: z.string().min(1, "Password is required"), // Not strictly checked in mock, but good for UI
+  password: z.string().optional(), // Password optional for prototype; allow code-only login
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -48,8 +48,12 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
+      // Route users based on role
       if (user.role === 'Admin') {
         setLocation('/admin/dashboard');
+      } else if (user.role === 'HR') {
+        // HR users go straight to the review/approvals view
+        setLocation('/admin/view-leaves');
       } else {
         setLocation('/employee/dashboard');
       }
@@ -72,7 +76,7 @@ export default function Login() {
   const onSubmit = async (data: LoginForm) => {
     // Mock password check - in real app this would be secure
     // Accepting any password for the prototype as long as code matches
-    const success = await login(data.code.toUpperCase());
+    const success = await login(data.code.toUpperCase(), data.password);
     
     if (success) {
       toast({

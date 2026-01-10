@@ -4,10 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useEffect, useState } from 'react';
 
 export default function LeaveHistory() {
   const { user } = useAuth();
-  const leaves = getStoredLeaves().filter(l => l.employeeCode === user?.code);
+  const [leaves, setLeaves] = useState<any[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!user) return;
+      const all = await getStoredLeaves();
+      if (!mounted) return;
+      setLeaves(all.filter((l: any) => l.employeeCode === user.code));
+    };
+    load();
+    return () => { mounted = false; };
+  }, [user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

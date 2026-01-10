@@ -1,10 +1,26 @@
 import { getStoredLeaves } from '@/lib/storage';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { startOfYear, format, getMonth, parseISO } from 'date-fns';
 
 export default function Charts() {
-  const leaves = getStoredLeaves();
+  const [leaves, setLeaves] = useState<any[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const l = await getStoredLeaves();
+        if (!mounted) return;
+        setLeaves(l);
+      } catch (err) {
+        console.error('Error loading leaves for charts', err);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   // Data for Bar Chart (Leave Type Distribution)
   const typeCount = leaves.reduce((acc, leave) => {

@@ -2,14 +2,32 @@ import { useAuth } from '@/context/AuthContext';
 import { getStoredLeaves, getLeaveBalance } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Clock, FileText, CheckCircle2, XCircle, AlertCircle, PieChart } from 'lucide-react';
+import { CalendarDays, Clock, FileText, CheckCircle2, XCircle, AlertCircle, PieChart, Lock } from 'lucide-react';
 import { Link } from 'wouter';
 import { format } from 'date-fns';
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import Permission from './Permission';
 
 export default function EmployeeDashboard() {
   const { user } = useAuth();
-  const leaves = getStoredLeaves().filter(l => l.employeeCode === user?.code);
-  const balance = user ? getLeaveBalance(user.code) : null;
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [leaves, setLeaves] = useState<any[]>([]);
+  const [balance, setBalance] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (user) {
+        const allLeaves = await getStoredLeaves();
+        setLeaves(allLeaves.filter(l => l.employeeCode === user.code));
+        const leaveBalance = await getLeaveBalance(user.code);
+        setBalance(leaveBalance);
+      }
+      setLoading(false);
+    };
+    loadData();
+  }, [user]);
   
   const pending = leaves.filter(l => l.status === 'Pending').length;
   const approved = leaves.filter(l => l.status === 'Approved').length;
@@ -22,14 +40,33 @@ export default function EmployeeDashboard() {
           <h2 className="text-3xl font-display font-bold text-white mb-2">Welcome, {user?.name.split(' ')[0]}</h2>
           <p className="text-muted-foreground">Here's an overview of your leave status</p>
         </div>
-        <Link href="/employee/apply-leave">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-            + Apply New Leave
+        <div className="flex gap-3">
+          <Button 
+            onClick={() => setShowPermissionModal(true)}
+            className="bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-[0_0_15px_rgba(234,88,12,0.5)] flex items-center gap-2"
+          >
+            <Lock className="w-4 h-4" />
+            Request Permission
           </Button>
-        </Link>
+          <Link href="/employee/apply-leave">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+              + Apply New Leave
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <Dialog open={showPermissionModal} onOpenChange={setShowPermissionModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card/95 border-white/10">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Lock className="w-5 h-5 text-orange-500" />
+              Request Permission
+            </DialogTitle>
+          </DialogHeader>
+          <Permission onClose={() => setShowPermissionModal(false)} />
+        </DialogContent>
+      </Dialog>      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="bg-card/40 backdrop-blur border-white/5 hover:border-primary/50 transition-all duration-300 group">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Leave Quota</CardTitle>

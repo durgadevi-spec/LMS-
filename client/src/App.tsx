@@ -6,8 +6,10 @@ import EmployeeDashboard from '@/pages/employee/Dashboard';
 import ApplyLeave from '@/pages/employee/ApplyLeave';
 import LeaveHistory from '@/pages/employee/History';
 import Profile from '@/pages/employee/Profile';
+import Permission from '@/pages/employee/Permission';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import ViewLeaves from '@/pages/admin/ViewLeaves';
+import ViewPermissions from '@/pages/admin/ViewPermissions';
 import Charts from '@/pages/admin/Charts';
 import Employees from '@/pages/admin/Employees';
 import Reports from '@/pages/Reports';
@@ -37,12 +39,25 @@ function ProtectedRoute({ component: Component, role }: { component: any, role?:
   
   if (role) {
     if (role === 'Admin' && user.role !== 'Admin' && user.role !== 'HR') {
-         // Allow HR to access Admin pages like View Leaves?
-         // We'll handle specific page permissions below or in the route definition
-         return <div className="text-white p-8">Unauthorized Access</div>;
+         // Allow HR to access Admin pages like View Leaves and View Permissions
+         return (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-white p-8 text-center bg-card/50 rounded-lg border border-white/10">
+              <p className="text-lg font-semibold">Unauthorized Access</p>
+              <p className="text-sm text-gray-400 mt-2">You do not have permission to access this page.</p>
+            </div>
+          </div>
+         );
     }
     if (role === 'Employee' && (user.role !== 'Employee' && user.role !== 'HR' && user.role !== 'Admin')) {
-        return <div className="text-white p-8">Unauthorized Access</div>;
+        return (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-white p-8 text-center bg-card/50 rounded-lg border border-white/10">
+              <p className="text-lg font-semibold">Unauthorized Access</p>
+              <p className="text-sm text-gray-400 mt-2">You do not have permission to access this page.</p>
+            </div>
+          </div>
+        );
     }
   }
 
@@ -71,6 +86,9 @@ function AppRoutes() {
       <Route path="/employee/profile">
         <ProtectedRoute component={Profile} role="Employee" />
       </Route>
+      <Route path="/employee/permission">
+        <ProtectedRoute component={Permission} role="Employee" />
+      </Route>
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard">
@@ -79,6 +97,9 @@ function AppRoutes() {
       <Route path="/admin/view-leaves">
         {/* HR needs access to View Leaves */}
         <ProtectedRoute component={ViewLeaves} role="Admin" /> 
+      </Route>
+      <Route path="/admin/view-permissions">
+        <ProtectedRoute component={ViewPermissions} role="Admin" />
       </Route>
       <Route path="/admin/departments">
          <ProtectedRoute component={Employees} role="Admin" />
