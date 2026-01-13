@@ -16,7 +16,16 @@ export default function LeaveHistory() {
       if (!user) return;
       const all = await getStoredLeaves();
       if (!mounted) return;
-      setLeaves(all.filter((l: any) => l.employeeCode === user.code));
+      // Match by employeeCode (username) OR employeeId (user_id) to handle different DB states
+      const matched = all.filter((l: any) => (
+        l.employeeCode === user.code ||
+        l.employeeId === user.id ||
+        l.employeeCode === user.id ||
+        l.employeeId === user.code
+      ));
+      // sort newest first
+      matched.sort((a: any, b: any) => new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime());
+      setLeaves(matched);
     };
     load();
     return () => { mounted = false; };
@@ -47,8 +56,10 @@ export default function LeaveHistory() {
                 <TableHead className="text-gray-300">Duration</TableHead>
                 <TableHead className="text-gray-300">Reason</TableHead>
                 <TableHead className="text-gray-300">Applied On</TableHead>
+                <TableHead className="text-gray-300">Attachment</TableHead>
                 <TableHead className="text-gray-300">Status</TableHead>
                 <TableHead className="text-gray-300">Action By</TableHead>
+                <TableHead className="text-gray-300">Comments</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -70,6 +81,15 @@ export default function LeaveHistory() {
                       {leave.description}
                     </TableCell>
                     <TableCell className="text-gray-300">{format(new Date(leave.appliedDate), 'MMM dd, yyyy')}</TableCell>
+                    <TableCell className="text-gray-300">
+                      {leave.attachment ? (
+                        <a href={leave.attachment} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                          View
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={getStatusColor(leave.status)}>
                         {leave.status}
@@ -79,9 +99,12 @@ export default function LeaveHistory() {
                       {leave.actionBy ? (
                         <div className="flex flex-col">
                           <span>{leave.actionBy}</span>
-                          <span className="text-[10px]">{leave.actionDate}</span>
+                          <span className="text-[10px]">{leave.actionDate ? format(new Date(leave.actionDate), 'MMM dd, yyyy') : ''}</span>
                         </div>
                       ) : '-'}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-300 max-w-[220px] truncate" title={leave.reasonForAction || ''}>
+                      {leave.reasonForAction || '-'}
                     </TableCell>
                   </TableRow>
                 ))

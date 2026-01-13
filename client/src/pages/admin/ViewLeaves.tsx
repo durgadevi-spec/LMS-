@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getStoredLeaves, updateLeaveStatus } from '@/lib/storage';
+import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +33,41 @@ export default function ViewLeaves() {
   useEffect(() => {
     const loadLeaves = async () => {
       const allLeaves = await getStoredLeaves();
-      setLeaves(allLeaves.filter(l => l.status === 'Pending'));
+      let pending = allLeaves.filter(l => l.status === 'Pending');
+
+      // Enrich missing employee names by querying users table in batch
+      const missingIds = Array.from(new Set(
+        pending
+          .filter((l: any) => !l.employeeName)
+          .flatMap((l: any) => [l.employeeId, l.employeeCode])
+          .filter(Boolean)
+      ));
+
+      if (missingIds.length > 0) {
+        try {
+          const { data: usersById } = await supabase.from('users').select('user_id,name,username').in('user_id', missingIds as any[]);
+          const { data: usersByUsername } = await supabase.from('users').select('user_id,name,username').in('username', missingIds as any[]);
+          const users = [...(usersById || []), ...(usersByUsername || [])];
+
+          const userMap: Record<string, any> = {};
+          users.forEach((u: any) => {
+            if (u.user_id) userMap[u.user_id] = u;
+            if (u.username) userMap[u.username] = u;
+          });
+
+          pending = pending.map((l: any) => {
+            const keyId = l.employeeId || l.employeeCode;
+            const resolved = userMap[l.employeeId] || userMap[l.employeeCode] || (keyId && userMap[keyId]);
+            return {
+              ...l,
+              employeeName: l.employeeName || (resolved ? (resolved.name || resolved.username) : ''),
+            };
+          });
+        } catch (e) {
+          console.error('Error enriching leave names in admin view:', e);
+        }
+      }
+      setLeaves(pending);
       setLoading(false);
     };
     loadLeaves();
@@ -100,9 +135,14 @@ export default function ViewLeaves() {
                 <div className="flex flex-col md:flex-row justify-between gap-6">
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-bold text-white">{leave.employeeName}</h3>
-                      <Badge variant="outline" className="text-primary border-primary/20">{leave.employeeCode}</Badge>
-                      <Badge variant="secondary" className="bg-white/5">{leave.type}</Badge>
+                      {/* Show name and id together when possible (e.g. "Naveen Kumar (E0053)") */}
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-xl font-bold text-white">{leave.employeeName ? `${leave.employeeName} (${leave.employeeId || leave.employeeCode})` : (leave.employeeCode || leave.employeeId)}</h3>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="bg-white/5">{leave.type}</Badge>
+                          <Badge variant="outline" className="text-primary border-primary/20">{leave.employeeId || leave.employeeCode}</Badge>
+                        </div>
+                      </div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 text-sm text-gray-400">

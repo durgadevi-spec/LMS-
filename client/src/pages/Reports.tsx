@@ -1,4 +1,4 @@
-import { getStoredLeaves, getStoredUsers } from '@/lib/storage';
+import { getStoredLeaves, getStoredUsers, getStoredPermissions } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function Reports() {
   const [leaves, setLeaves] = useState<any[]>([]);
+  const [permissions, setPermissions] = useState<any[]>([]);
   const users = getStoredUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
@@ -23,6 +24,8 @@ export default function Reports() {
     const loadLeaves = async () => {
       const allLeaves = await getStoredLeaves();
       setLeaves(allLeaves);
+      const allPermissions = await getStoredPermissions();
+      setPermissions(allPermissions);
       setLoading(false);
     };
     loadLeaves();
@@ -33,9 +36,11 @@ export default function Reports() {
       const employees = users.filter(u => u.role === 'Employee');
       const reportData = employees.map(user => {
         const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
+        const userPermissions = permissions.filter(p => p.employeeCode === user.code && p.status === 'Approved');
         const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
         const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
         const odCount = userLeaves.filter(l => l.type === 'OD').length;
+        const permissionCount = userPermissions.length;
         const compOffCount = userLeaves.filter(l => l.type === 'Comp Off').length;
         const lwpCount = userLeaves.filter(l => l.type === 'LWP').length;
         const earnedCount = userLeaves.filter(l => l.type === 'Earned').length;
@@ -45,18 +50,19 @@ export default function Reports() {
           code: user.code,
           designation: user.designation,
           casual: casualCount,
+          permission: permissionCount,
           sick: sickCount,
           od: odCount,
           compOff: compOffCount,
           lwp: lwpCount,
           earned: earnedCount,
-          total: casualCount + sickCount + odCount + compOffCount + lwpCount + earnedCount
+          total: casualCount + sickCount + odCount + compOffCount + lwpCount + earnedCount + permissionCount
         };
       });
 
-      let csv = 'Employee Name,Employee Code,Designation,Casual,Sick,OD,Comp Off,LWP,Earned,Total\n';
+      let csv = 'Employee Name,Employee Code,Designation,Casual,Permission,Sick,OD,Comp Off,LWP,Earned,Total\n';
       reportData.forEach(row => {
-        csv += `"${row.name}","${row.code}","${row.designation}",${row.casual},${row.sick},${row.od},${row.compOff},${row.lwp},${row.earned},${row.total}\n`;
+        csv += `"${row.name}","${row.code}","${row.designation}",${row.casual},${row.permission},${row.sick},${row.od},${row.compOff},${row.lwp},${row.earned},${row.total}\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -87,9 +93,11 @@ export default function Reports() {
       const employees = users.filter(u => u.role === 'Employee');
       const reportData = employees.map(user => {
         const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
+        const userPermissions = permissions.filter(p => p.employeeCode === user.code && p.status === 'Approved');
         const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
         const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
         const odCount = userLeaves.filter(l => l.type === 'OD').length;
+        const permissionCount = userPermissions.length;
         const compOffCount = userLeaves.filter(l => l.type === 'Comp Off').length;
         const lwpCount = userLeaves.filter(l => l.type === 'LWP').length;
         const earnedCount = userLeaves.filter(l => l.type === 'Earned').length;
@@ -98,12 +106,13 @@ export default function Reports() {
           EmployeeCode: user.code,
           Designation: user.designation,
           Casual: casualCount,
+          Permission: permissionCount,
           Sick: sickCount,
           OD: odCount,
           CompOff: compOffCount,
           LWP: lwpCount,
           Earned: earnedCount,
-          Total: casualCount + sickCount + odCount + compOffCount + lwpCount + earnedCount
+          Total: casualCount + sickCount + odCount + compOffCount + lwpCount + earnedCount + permissionCount
         };
       });
 
@@ -147,18 +156,21 @@ export default function Reports() {
     .filter(u => u.role === 'Employee')
     .map(user => {
       const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
+      const userPermissions = permissions.filter(p => p.employeeCode === user.code && p.status === 'Approved');
       
       const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
       const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
       const odCount = userLeaves.filter(l => l.type === 'OD').length;
+      const permissionCount = userPermissions.length;
       const compOffCount = userLeaves.filter(l => l.type === 'Comp Off').length;
       const lwpCount = userLeaves.filter(l => l.type === 'LWP').length;
       const earnedCount = userLeaves.filter(l => l.type === 'Earned').length;
-      const totalLeaves = userLeaves.length;
+      const totalLeaves = userLeaves.length + userPermissions.length;
 
       return {
         user,
         casual: casualCount,
+        permission: permissionCount,
         sick: sickCount,
         od: odCount,
         compOff: compOffCount,
@@ -245,7 +257,7 @@ export default function Reports() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card className="bg-card/40 backdrop-blur border-white/10">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-gray-400">Total Casual</CardTitle>
@@ -284,6 +296,15 @@ export default function Reports() {
 
         <Card className="bg-card/40 backdrop-blur border-white/10">
           <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-400">Total Permission</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-400">{reportData.reduce((sum, r) => sum + (r.permission || 0), 0)}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/40 backdrop-blur border-white/10">
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm text-gray-400">Total Leaves</CardTitle>
           </CardHeader>
           <CardContent>
@@ -306,6 +327,7 @@ export default function Reports() {
                   <TableHead className="text-gray-300 text-center">OD</TableHead>
                   <TableHead className="text-gray-300 text-center">Comp Off</TableHead>
                   <TableHead className="text-gray-300 text-center">LWP</TableHead>
+                  <TableHead className="text-gray-300 text-center">Permission</TableHead>
                   <TableHead className="text-gray-300 text-center">Earned</TableHead>
                   <TableHead className="text-gray-300 text-center">Total</TableHead>
                 </TableRow>
@@ -321,6 +343,7 @@ export default function Reports() {
                     <TableCell className="text-center text-green-400 font-bold">{item.od}</TableCell>
                     <TableCell className="text-center text-purple-400 font-bold">{item.compOff}</TableCell>
                     <TableCell className="text-center text-gray-400 font-bold">{item.lwp}</TableCell>
+                    <TableCell className="text-center text-yellow-400 font-bold">{item.permission || 0}</TableCell>
                     <TableCell className="text-center text-yellow-400 font-bold">{item.earned}</TableCell>
                     <TableCell className="text-center">
                       <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">

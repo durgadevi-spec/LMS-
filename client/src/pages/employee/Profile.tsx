@@ -2,32 +2,13 @@ import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { User as UserIcon, Mail, Briefcase, Building, AlertCircle, Calendar } from 'lucide-react';
-import { getStoredLeaves, getLeaveBalance } from '@/lib/storage';
 import { ALL_HOLIDAYS } from '@/lib/data';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Profile() {
   const { user } = useAuth();
-  const [balance, setBalance] = useState<any>(null);
-  const [approvedLeaves, setApprovedLeaves] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    const loadData = async () => {
-      if (user) {
-        const leaveBalance = await getLeaveBalance(user.code);
-        setBalance(leaveBalance);
-        
-        const allLeaves = await getStoredLeaves();
-        const leaves = allLeaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
-        setApprovedLeaves(leaves);
-      }
-      setLoading(false);
-    };
-    loadData();
-  }, [user]);
-  
-  if (!user || loading) return null;
+  const [_, setDummy] = useState(0);
+  if (!user) return null;
   
   // Get upcoming holidays (from current date onwards)
   const today = new Date();
@@ -35,15 +16,7 @@ export default function Profile() {
     .filter(h => new Date(h.date) > today)
     .slice(0, 8);
 
-  // Calculate worked days (total business days - holidays - approved leaves)
-  const totalWorkingDays = 30; // Days in current month
-  const holidaysCount = ALL_HOLIDAYS.length;
-  const leavesCount = approvedLeaves.length;
-  
-  const workedDays = Math.max(0, totalWorkingDays - holidaysCount - leavesCount);
-  const targetDays = 25;
-  const isBelowTarget = workedDays < targetDays;
-  const attendanceRate = Math.round((workedDays / targetDays) * 100);
+  // upcomingHolidays computed below
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -71,69 +44,62 @@ export default function Profile() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Productivity Overview - placeholder (no data) */}
         <Card className="bg-card/40 backdrop-blur border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Productivity Overview</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
+          <CardContent>
+            <div className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Worked Days vs Target</span>
-                <span className={isBelowTarget ? "text-red-500 font-bold" : "text-green-500 font-bold"}>
-                  {workedDays} / {targetDays} Days
-                </span>
+                <span className="text-gray-400 font-bold">— / — Days</span>
               </div>
-              <Progress value={(workedDays / targetDays) * 100} className={`h-2 ${isBelowTarget ? "bg-red-900" : "bg-primary/20"}`} />
-               {isBelowTarget && (
-                <p className="text-xs text-red-400 mt-1 animate-pulse">
-                  Warning: Worked days are below the target of {targetDays} days.
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-              <div>
-                <p className="text-sm text-muted-foreground">Approved Leaves</p>
-                <p className="text-2xl font-bold text-white">{leavesCount}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Attendance Rate</p>
-                <p className="text-2xl font-bold text-primary">{attendanceRate}%</p>
+              <Progress value={0} className="h-2 bg-primary/20" />
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                <div>
+                  <p className="text-sm text-muted-foreground">Approved Leaves</p>
+                  <p className="text-2xl font-bold text-white">—</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Attendance Rate</p>
+                  <p className="text-2xl font-bold text-primary">—</p>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Leave Balance - placeholder (no data) */}
         <Card className="bg-card/40 backdrop-blur border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Leave Balance</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-             <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Personal (Casual) Leave</span>
-                    <span className="text-white font-mono">{balance.casual.remaining} / {balance.casual.total}</span>
-                  </div>
-                  <Progress value={(balance.casual.used / balance.casual.total) * 100} className="h-2 bg-blue-900/50" />
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Personal (Casual) Leave</span>
+                  <span className="text-white font-mono">— / —</span>
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Sick Leave</span>
-                    <span className="text-white font-mono">{balance.sick.remaining} / {balance.sick.total}</span>
-                  </div>
-                  <Progress value={(balance.sick.used / balance.sick.total) * 100} className="h-2 bg-purple-900/50" />
+                <Progress value={0} className="h-2 bg-blue-900/50" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Sick Leave</span>
+                  <span className="text-white font-mono">— / —</span>
                 </div>
-                
-                <div className="pt-2 border-t border-white/5 text-xs text-muted-foreground flex items-center gap-2">
-                   <AlertCircle className="w-3 h-3 text-primary" />
-                   <span>Balances reset on Jan 1st of every year.</span>
-                </div>
-             </div>
+                <Progress value={0} className="h-2 bg-purple-900/50" />
+              </div>
+              <div className="pt-2 border-t border-white/5 text-xs text-muted-foreground flex items-center gap-2">
+                <AlertCircle className="w-3 h-3 text-primary" />
+                <span>Balances reset on Jan 1st of every year.</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
+        {/* Holidays card (kept) */}
         <Card className="bg-card/40 backdrop-blur border-white/10">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">

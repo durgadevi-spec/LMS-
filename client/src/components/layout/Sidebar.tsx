@@ -53,6 +53,15 @@ export function Sidebar() {
 
   const links = user?.role === 'Admin' ? adminLinks : (user?.role === 'HR' ? hrLinks : employeeLinks);
 
+  const getInitials = (name?: string, code?: string) => {
+    if (name && name.trim()) {
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return code ? code.slice(0, 2).toUpperCase() : '';
+  };
+
   return (
     <aside className="w-64 h-screen border-r border-white/10 bg-card/50 backdrop-blur-xl flex flex-col fixed left-0 top-0 z-50">
       <div className="p-6 flex items-center gap-3 border-b border-white/10">
@@ -80,11 +89,11 @@ export function Sidebar() {
       <div className="p-4 border-t border-white/10 bg-black/20">
         <div className="flex items-center gap-3 mb-4 px-2">
           <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center border border-white/10 text-xs font-bold">
-            {user?.code.slice(0, 2)}
+            {getInitials(user?.name, user?.code)}
           </div>
           <div className="overflow-hidden">
             <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-            <p className="text-xs text-muted-foreground">{user?.code}</p>
+            <p className="text-xs text-muted-foreground">{user?.id}</p>
           </div>
         </div>
         <button 

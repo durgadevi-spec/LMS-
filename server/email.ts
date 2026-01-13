@@ -13,6 +13,17 @@ const FROM_EMAIL = process.env.FROM_EMAIL || "leave@timestrap.space";
 const VERIFIED_FROM_EMAIL = process.env.VERIFIED_FROM_EMAIL || undefined;
 const DEFAULT_ADMIN_EMAILS = (process.env.ADMIN_EMAIL || "naveen@ctint.in").split(",").map((s) => s.trim()).filter(Boolean);
 
+function sanitizeSubject(subject: string | undefined): string {
+  if (!subject) return '';
+  // Remove newlines/carriage returns and backticks, collapse whitespace, trim and cap length
+  return subject
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/`+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 200);
+}
+
 let resendClient: Resend | null = null;
 if (RESEND_API_KEY) {
   try {
@@ -40,10 +51,11 @@ export async function sendEmailNotification(notification: EmailNotification): Pr
       return true;
     }
 
+    const safeSubject = sanitizeSubject(notification.subject);
     let resp: any = await resendClient.emails.send({
       from: FROM_EMAIL,
       to: toRecipients,
-      subject: notification.subject,
+      subject: safeSubject,
       html: notification.html,
     });
 
@@ -52,10 +64,11 @@ export async function sendEmailNotification(notification: EmailNotification): Pr
     if (resp && resp.error && resp.error.name === 'validation_error' && VERIFIED_FROM_EMAIL && VERIFIED_FROM_EMAIL !== FROM_EMAIL) {
       console.warn('[EMAIL] Resend rejected FROM_EMAIL; retrying with VERIFIED_FROM_EMAIL', VERIFIED_FROM_EMAIL);
       try {
+        const safeRetrySubject = sanitizeSubject(notification.subject);
         resp = await resendClient.emails.send({
           from: VERIFIED_FROM_EMAIL,
           to: toRecipients,
-          subject: notification.subject,
+          subject: safeRetrySubject,
           html: notification.html,
         });
       } catch (e) {

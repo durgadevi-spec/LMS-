@@ -1,5 +1,5 @@
 import { useAuth } from '@/context/AuthContext';
-import { getStoredLeaves, getLeaveBalance } from '@/lib/storage';
+import { getStoredLeaves, getLeaveBalance, getStoredPermissions } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, FileText, CheckCircle2, XCircle, AlertCircle, PieChart, Lock } from 'lucide-react';
@@ -13,6 +13,7 @@ export default function EmployeeDashboard() {
   const { user } = useAuth();
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [leaves, setLeaves] = useState<any[]>([]);
+  const [permissions, setPermissions] = useState<any[]>([]);
   const [balance, setBalance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +21,22 @@ export default function EmployeeDashboard() {
     const loadData = async () => {
       if (user) {
         const allLeaves = await getStoredLeaves();
-        setLeaves(allLeaves.filter(l => l.employeeCode === user.code));
+        const matchedLeaves = allLeaves.filter((l: any) => (
+          l.employeeCode === user.code ||
+          l.employeeId === user.id ||
+          l.employeeCode === user.id ||
+          l.employeeId === user.code
+        ));
+        setLeaves(matchedLeaves);
+
+        const allPermissions = await getStoredPermissions();
+        const matchedPermissions = allPermissions.filter((p: any) => (
+          p.employeeCode === user.code ||
+          p.employeeId === user.id ||
+          p.employeeCode === user.id ||
+          p.employeeId === user.code
+        ));
+        setPermissions(matchedPermissions);
         const leaveBalance = await getLeaveBalance(user.code);
         setBalance(leaveBalance);
       }
@@ -29,9 +45,25 @@ export default function EmployeeDashboard() {
     loadData();
   }, [user]);
   
-  const pending = leaves.filter(l => l.status === 'Pending').length;
-  const approved = leaves.filter(l => l.status === 'Approved').length;
-  const rejected = leaves.filter(l => l.status === 'Rejected').length;
+  // include both leaves and permissions in counts so employees see overall totals
+  const pending = leaves.filter(l => l.status === 'Pending').length + permissions.filter(p => p.status === 'Pending').length;
+  const approved = leaves.filter(l => l.status === 'Approved').length + permissions.filter(p => p.status === 'Approved').length;
+  const rejected = leaves.filter(l => l.status === 'Rejected').length + permissions.filter(p => p.status === 'Rejected').length;
+
+  // Determine current active leave (today between start and end) or most recent request
+  const today = new Date();
+  const currentLeave = leaves.find(l => {
+    try {
+      const s = new Date(l.startDate);
+      const e = new Date(l.endDate);
+      return s <= today && today <= e;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const mostRecent = ([...leaves, ...permissions]
+    .sort((a, b) => new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime())[0]) || null;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -66,7 +98,44 @@ export default function EmployeeDashboard() {
           </DialogHeader>
           <Permission onClose={() => setShowPermissionModal(false)} />
         </DialogContent>
-      </Dialog>      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      </Dialog>
+
+      {/* Current Request summary */}
+      <div className="mb-4">
+        <Card className="bg-card/30 border-white/5">
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-400">Current Request</p>
+                {currentLeave ? (
+                  <p className="text-white font-semibold">{currentLeave.type} — {currentLeave.status}</p>
+                ) : mostRecent ? (
+                  <p className="text-white font-semibold">{mostRecent.type || mostRecent.title} — {mostRecent.status}</p>
+                ) : (
+                  <p className="text-gray-400">No active requests</p>
+                )}
+              </div>
+              <div>
+                {currentLeave ? (
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                    currentLeave.status === 'Approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                    currentLeave.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                    'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                  }`}>{currentLeave.status}</span>
+                ) : mostRecent ? (
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                    mostRecent.status === 'Approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                    mostRecent.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                    'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                  }`}>{mostRecent.status}</span>
+                ) : null}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="bg-card/40 backdrop-blur border-white/5 hover:border-primary/50 transition-all duration-300 group">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Leave Quota</CardTitle>
@@ -125,38 +194,57 @@ export default function EmployeeDashboard() {
       <div className="space-y-4">
         <h3 className="text-xl font-display font-semibold text-white">Recent Activity</h3>
         <div className="bg-card/30 border border-white/5 rounded-lg overflow-hidden backdrop-blur-sm">
-          {leaves.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              No leave history found.
-            </div>
+          { (leaves.length + permissions.length) === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">No leave or permission history found.</div>
           ) : (
             <div className="divide-y divide-white/5">
-              {leaves.slice(0, 5).map((leave) => (
-                <div key={leave.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+              {/* merge leaves and permissions into a single recent activity feed */}
+              {([
+                ...leaves.map(l => ({
+                  ...l,
+                  kind: 'leave',
+                  title: `${l.type} Leave`,
+                  sortDate: l.appliedDate,
+                })),
+                ...permissions.map(p => ({
+                  ...p,
+                  kind: 'permission',
+                  title: p.type,
+                  sortDate: p.appliedDate,
+                }))
+              ] as any)
+                .sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime())
+                .slice(0, 5)
+                .map((item: any) => (
+                <div key={`${item.kind}-${item.id}`} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${
-                      leave.status === 'Approved' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
-                      leave.status === 'Rejected' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                      item.status === 'Approved' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
+                      item.status === 'Rejected' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
                       'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
                     }`}>
-                      {leave.status === 'Approved' ? <CheckCircle2 className="w-5 h-5" /> :
-                       leave.status === 'Rejected' ? <XCircle className="w-5 h-5" /> :
+                      {item.status === 'Approved' ? <CheckCircle2 className="w-5 h-5" /> :
+                       item.status === 'Rejected' ? <XCircle className="w-5 h-5" /> :
                        <Clock className="w-5 h-5" />}
                     </div>
                     <div>
-                      <p className="text-white font-medium">{leave.type} Leave</p>
-                      <p className="text-sm text-muted-foreground">{format(new Date(leave.startDate), 'MMM dd, yyyy')} - {leave.duration}</p>
+                      <p className="text-white font-medium">{item.title}</p>
+                      {item.kind === 'leave' ? (
+                        <p className="text-sm text-muted-foreground">{format(new Date(item.startDate), 'MMM dd, yyyy')} - {item.duration}</p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">{item.startTime} - {item.endTime}</p>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                      leave.status === 'Approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                      leave.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                      item.status === 'Approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                      item.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
                       'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
                     }`}>
-                      {leave.status}
+                      {item.status}
                     </span>
-                    <p className="text-xs text-muted-foreground mt-1">Applied: {format(new Date(leave.appliedDate), 'MMM dd')}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Applied: {format(new Date(item.appliedDate), 'MMM dd')}</p>
                   </div>
                 </div>
               ))}

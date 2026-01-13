@@ -38,11 +38,13 @@ export async function getStoredLeaves(): Promise<LeaveRequest[]> {
     }
 
     // Map Supabase leaves to LeaveRequest format
-    return (data || []).map((row: any) => ({
+    const mapped = (data || []).map((row: any) => ({
       id: String(row.id),
       employeeId: String(row.user_id || ''),
-      employeeName: row.employee_name || '',
-      employeeCode: row.employee_code || '',
+      // prefer `username` column if present, then `employee_name`, then `name`
+      employeeName: row.username || row.employee_name || row.name || '',
+      // prefer explicit employee_code, otherwise fall back to user_id
+      employeeCode: row.employee_code || row.user_id || '',
       type: row.leave_type || '',
       startDate: row.start_date || '',
       endDate: row.end_date || '',
@@ -55,6 +57,38 @@ export async function getStoredLeaves(): Promise<LeaveRequest[]> {
       actionDate: row.action_date || undefined,
       appliedDate: row.created_at ? new Date(row.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     }));
+
+    // Enrich mapped rows: if employeeName is missing or looks like an ID (e.g., E0053),
+    // fetch the real `name` from `users` and replace it so UI shows human names.
+    const needs = mapped
+      .filter(r => !r.employeeName || /^E\d{3,}$/.test(r.employeeName) || r.employeeName === r.employeeCode)
+      .map(r => r.employeeId)
+      .filter(Boolean);
+
+    if (needs.length > 0) {
+      try {
+        const { data: users } = await supabase
+          .from('users')
+          .select('user_id,name,username')
+          .in('user_id', needs);
+
+        const userMap: Record<string, any> = {};
+        (users || []).forEach((u: any) => { userMap[u.user_id] = u; });
+
+        return mapped.map(m => {
+          const u = userMap[m.employeeId];
+          if (u && u.name && u.name !== '' && u.name !== m.employeeId) {
+            return { ...m, employeeName: u.name };
+          }
+          return m;
+        });
+      } catch (e) {
+        console.error('Error enriching leave names:', e);
+        return mapped;
+      }
+    }
+
+    return mapped;
   } catch (err) {
     console.error('Error fetching leaves:', err);
     return INITIAL_LEAVES;
@@ -63,25 +97,41 @@ export async function getStoredLeaves(): Promise<LeaveRequest[]> {
 
 export async function addLeaveRequest(leave: LeaveRequest) {
   try {
-    const { data, error } = await supabase
-      .from('leaves')
-      .insert({
-        user_id: leave.employeeId,
-        leave_type: leave.type,
-        start_date: leave.startDate,
-        end_date: leave.endDate,
-        reason: leave.description,
-        attachment: leave.attachment || null,
-      })
-      .select();
-    if (error) {
-      console.error('Error adding leave to Supabase:', error);
-      throw error;
+    const safePayload: any = {
+      user_id: leave.employeeId,
+      ...(leave.employeeCode ? { username: leave.employeeCode } : {}),
+      leave_type: leave.type,
+      start_date: leave.startDate,
+      end_date: leave.endDate,
+      // include duration when DB supports it
+      ...(leave.duration ? { leave_duration_type: leave.duration } : {}),
+      reason: leave.description,
+      attachment: leave.attachment || null,
+    };
+
+    const fullPayload: any = {
+      ...safePayload,
+      ...(leave.employeeName ? { employee_name: leave.employeeName, name: leave.employeeName } : {}),
+    };
+
+    // Try safe payload first (avoid optional name columns that may not exist).
+    let resp = await supabase.from('leaves').insert(safePayload).select();
+    if (resp.error) {
+      const errMsg = String(resp.error.message || '');
+      // If safe payload failed due to enum/other reasons, try full payload as fallback.
+      if (!/column .* does not exist/i.test(errMsg) && !/Could not find the .* column/i.test(errMsg)) {
+        resp = await supabase.from('leaves').insert(fullPayload).select();
+      }
     }
 
-    return data;
+    if (resp.error) {
+      console.error('Error adding leave to Supabase after retry:', resp.error);
+      throw resp.error;
+    }
+
+    return resp.data;
   } catch (err) {
-    console.error('Error in addLeaveRequest:', err);
+    console.error('Error in addLeaveRequest (exception):', err);
     throw err;
   }
 }
@@ -173,8 +223,10 @@ export async function getStoredPermissions(): Promise<PermissionRequest[]> {
     return (data || []).map((row: any) => ({
       id: String(row.id),
       employeeId: String(row.user_id || ''),
-      employeeName: row.employee_name || '',
-      employeeCode: row.employee_code || '',
+      // prefer `username` column if present, then `employee_name`, then `name`
+      employeeName: row.username || row.employee_name || row.name || '',
+      // prefer explicit employee_code, otherwise fall back to user_id
+      employeeCode: row.employee_code || row.user_id || '',
       type: DB_TO_DISPLAY[row.permission_type] || row.permission_type,
       startTime: row.from_time || '',
       endTime: row.to_time || '',
@@ -203,23 +255,35 @@ export async function addPermissionRequest(permission: PermissionRequest) {
 
     const dbType = DISPLAY_TO_DB[permission.type] || permission.type;
 
-    const { data, error } = await supabase
-      .from('permissions')
-      .insert({
-        user_id: permission.employeeId,
-        permission_type: dbType,
-        from_time: permission.startTime,
-        to_time: permission.endTime,
-        reason: permission.reason,
-        additional_info: permission.additionalInfo || null,
-      })
-      .select();
-    if (error) {
-      console.error('Error adding permission to Supabase:', error);
-      throw error;
+    const safePerm: any = {
+      user_id: permission.employeeId,
+      ...(permission.employeeCode ? { username: permission.employeeCode } : {}),
+      permission_type: dbType,
+      from_time: permission.startTime,
+      to_time: permission.endTime,
+      reason: permission.reason,
+      additional_info: permission.additionalInfo || null,
+    };
+
+    const fullPerm: any = {
+      ...safePerm,
+      ...(permission.employeeName ? { employee_name: permission.employeeName, name: permission.employeeName } : {}),
+    };
+
+    let respPerm = await supabase.from('permissions').insert(safePerm).select();
+    if (respPerm.error) {
+      const errMsg = String(respPerm.error.message || '');
+      if (!/column .* does not exist/i.test(errMsg) && !/Could not find the .* column/i.test(errMsg)) {
+        respPerm = await supabase.from('permissions').insert(fullPerm).select();
+      }
     }
 
-    return data;
+    if (respPerm.error) {
+      console.error('Error adding permission to Supabase after retry:', respPerm.error);
+      throw respPerm.error;
+    }
+
+    return respPerm.data;
   } catch (err) {
     console.error('Error in addPermissionRequest:', err);
     throw err;
@@ -313,7 +377,8 @@ export async function getLeaveBalance(employeeCode: string): Promise<LeaveBalanc
 }
 
 // ============================================================================
-// ATTACHMENT UPLOAD - Upload to Supabase Storage (optional)
+// ============================================================================
+// Upload attachments to Supabase Storage
 // ============================================================================
 
 export async function uploadAttachment(
@@ -332,11 +397,11 @@ export async function uploadAttachment(
     }
 
     // Get public URL
-    const { data: publicUrl } = supabase.storage
+    const { data: publicUrl } = await supabase.storage
       .from('leave-attachments')
       .getPublicUrl(fileName);
 
-    return publicUrl?.publicUrl || null;
+    return (publicUrl as any)?.publicUrl || null;
   } catch (err) {
     console.error('Error in uploadAttachment:', err);
     return null;

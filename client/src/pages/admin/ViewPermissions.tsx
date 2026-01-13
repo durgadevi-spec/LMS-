@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getStoredPermissions, updatePermissionStatus, PermissionRequest } from '@/lib/storage';
+import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +33,41 @@ export default function ViewPermissions() {
   useEffect(() => {
     const loadPermissions = async () => {
       const allPermissions = await getStoredPermissions();
-      setPermissions(allPermissions.filter(p => p.status === 'Pending'));
+      let pending = allPermissions.filter(p => p.status === 'Pending');
+
+      // Enrich missing employee names by querying users table in batch (both user_id and username)
+      const missingIds = Array.from(new Set(
+        pending
+          .filter((p: any) => !p.employeeName)
+          .flatMap((p: any) => [p.employeeId, p.employeeCode])
+          .filter(Boolean)
+      ));
+
+      if (missingIds.length > 0) {
+        try {
+          const { data: usersById } = await supabase.from('users').select('user_id,name,username').in('user_id', missingIds as any[]);
+          const { data: usersByUsername } = await supabase.from('users').select('user_id,name,username').in('username', missingIds as any[]);
+          const users = [...(usersById || []), ...(usersByUsername || [])];
+
+          const userMap: Record<string, any> = {};
+          users.forEach((u: any) => {
+            if (u.user_id) userMap[u.user_id] = u;
+            if (u.username) userMap[u.username] = u;
+          });
+
+          pending = pending.map((p: any) => {
+            const keyId = p.employeeId || p.employeeCode;
+            const resolved = userMap[p.employeeId] || userMap[p.employeeCode] || (keyId && userMap[keyId]);
+            return {
+              ...p,
+              employeeName: p.employeeName || (resolved ? (resolved.name || resolved.username) : ''),
+            };
+          });
+        } catch (e) {
+          console.error('Error enriching permission names in admin view:', e);
+        }
+      }
+      setPermissions(pending);
       setLoading(false);
     };
     loadPermissions();
@@ -111,12 +146,15 @@ export default function ViewPermissions() {
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <p className="font-semibold text-white">{permission.employeeName}</p>
-                      <p className="text-sm text-gray-400">{permission.employeeCode}</p>
+                        <div className="flex items-center gap-3">
+                          <p className="font-semibold text-white">{permission.employeeName ? `${permission.employeeName} (${permission.employeeId || permission.employeeCode})` : (permission.employeeCode || permission.employeeId)}</p>
+                          <div className="flex items-center gap-2">
+                            <Badge className={`${getPermissionTypeColor(permission.type)} border`}>{permission.type}</Badge>
+                            <Badge variant="outline" className="text-primary border-primary/20">{permission.employeeId || permission.employeeCode}</Badge>
+                          </div>
+                        </div>
                     </div>
-                    <Badge className={`${getPermissionTypeColor(permission.type)} border`}>
-                      {permission.type}
-                    </Badge>
+                    {/* type and id shown above; keep layout consistent */}
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 px-3 bg-black/20 rounded-lg">

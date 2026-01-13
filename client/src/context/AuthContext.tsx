@@ -27,9 +27,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const normalizedCode = code.toString().trim();
 
-      // Try to find existing user by username
-      const selectQuery = supabase.from('users').select('*').eq('username', normalizedCode).limit(1);
-      if (password) selectQuery.eq('password', password);
+      // Try to find existing user by username OR user_id (handle different DB states)
+      let selectQuery = supabase.from('users').select('*').or(`username.eq.${normalizedCode},user_id.eq.${normalizedCode}`).limit(1);
+      if (password) selectQuery = selectQuery.eq('password', password);
       const { data, error } = await selectQuery.maybeSingle();
 
       if (error) {
@@ -88,6 +88,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     // Do not use localStorage; session cleared in memory.
     setLocation('/');
+  };
+
+  // Re-fetch the user's latest profile from the DB and update `user` in memory.
+  const refreshUser = async (identifier?: string) => {
+    try {
+      const code = identifier || (user?.code || user?.id || '');
+      if (!code) return;
+      const { data: fresh, error } = await supabase
+        .from('users')
+        .select('*')
+        .or(`username.eq.${code},user_id.eq.${code}`)
+        .limit(1)
+        .maybeSingle();
+      if (error) {
+        console.error('Error refreshing user profile', error);
+        return;
+      }
+      if (!fresh) return;
+      const dbRole = (fresh?.role || 'employee').toString().toLowerCase();
+      const mappedRole: Role = dbRole === 'admin' ? 'Admin' : dbRole === 'hr' ? 'HR' : 'Employee';
+      const updated: User = {
+        id: String(fresh?.user_id || fresh?.username || ''),
+        code: fresh?.username || fresh?.user_id || '',
+        name: fresh?.name || fresh?.username || '',
+        role: mappedRole,
+        designation: fresh?.designation || '',
+        email: fresh?.email || undefined,
+      };
+      setUser(updated);
+    } catch (err) {
+      console.error('refreshUser failed', err);
+    }
   };
 
   return (
