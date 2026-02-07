@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
@@ -23,7 +24,7 @@ import logoUrl from '@assets/Screenshot_2025-10-15_183825_1765652253224.png';
 
 const loginSchema = z.object({
   code: z.string().min(1, "Employee Code is required"),
-  password: z.string().optional(), // Password optional for prototype; allow code-only login
+  password: z.string().min(1, "Password is required"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -33,11 +34,11 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
+
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
+  const [employeeCodeForReset, setEmployeeCodeForReset] = useState('');
+  const [sending, setSending] = useState(false);
+
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -48,11 +49,9 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
-      // Route users based on role
       if (user.role === 'Admin') {
         setLocation('/admin/dashboard');
       } else if (user.role === 'HR') {
-        // HR users go straight to the review/approvals view
         setLocation('/admin/view-leaves');
       } else {
         setLocation('/employee/dashboard');
@@ -61,77 +60,86 @@ export default function Login() {
   }, [user, setLocation]);
 
   useEffect(() => {
-    // Intro animation
     const tl = gsap.timeline();
-    tl.fromTo(containerRef.current, 
-      { opacity: 0, scale: 0.95 }, 
+    tl.fromTo(
+      containerRef.current,
+      { opacity: 0, scale: 0.95 },
       { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }
-    ).fromTo(".login-element", 
-      { opacity: 0, y: 20 }, 
-      { opacity: 1, y: 0, stagger: 0.1, duration: 0.5 }, 
+    ).fromTo(
+      ".login-element",
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, stagger: 0.1, duration: 0.5 },
       "-=0.4"
     );
   }, []);
 
   const onSubmit = async (data: LoginForm) => {
-    // Mock password check - in real app this would be secure
-    // Accepting any password for the prototype as long as code matches
-    const success = await login(data.code.toUpperCase(), data.password);
-    
+    const code = data.code.trim().toUpperCase();
+    const password = data.password.trim();
+
+    const success = await login(code, password);
+
     if (success) {
       toast({
         title: "Welcome back",
         description: "Login successful",
         className: "bg-primary/10 border-primary/20 text-white"
       });
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid Employee Code",
-        variant: "destructive",
-      });
+      return;
     }
+
+    toast({
+      title: "Login Failed",
+      description: "Invalid Employee Code or Password",
+      variant: "destructive",
+    });
   };
 
-  const handleResetPassword = () => {
-    if (!oldPassword || !newPassword || !confirmPassword) {
+  const handleForgotPassword = async () => {
+    const code = employeeCodeForReset.trim().toUpperCase();
+
+    if (!code) {
       toast({
         title: "Error",
-        description: "All fields are required",
+        description: "Employee Code is required",
         variant: "destructive"
       });
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    try {
+      setSending(true);
+
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employeeCode: code })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message);
+      }
+
+      toast({
+        title: "Success",
+        description: "Reset link sent to your registered email",
+        className: "bg-green-500/10 border-green-500/20 text-white"
+      });
+
+      setEmployeeCodeForReset('');
+      setForgotPasswordOpen(false);
+
+    } catch (err: any) {
       toast({
         title: "Error",
-        description: "New passwords do not match",
+        description: err.message || "Failed to send reset link",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setSending(false);
     }
-
-    if (newPassword.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // In a real app, this would validate against the current password
-    toast({
-      title: "Success",
-      description: "Password reset successfully! Please login with your new password.",
-      className: "bg-green-500/10 border-green-500/20 text-white"
-    });
-
-    setOldPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setForgotPasswordOpen(false);
   };
 
   if (isLoading) return null;
@@ -145,65 +153,79 @@ export default function Login() {
 
       <div ref={containerRef} className="w-full max-w-md px-4 relative z-10">
         <div className="mb-8 text-center login-element flex flex-col items-center">
-           <img src={logoUrl} alt="Knockturn Logo" className="w-64 h-auto object-contain mb-4 drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
+          <img
+            src={logoUrl}
+            alt="Knockturn Logo"
+            className="w-64 h-auto object-contain mb-4 drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+          />
         </div>
 
         <Card className="bg-card/50 backdrop-blur-xl border-white/10 shadow-2xl">
           <CardHeader className="space-y-1 login-element">
-            <CardTitle className="text-3xl text-center text-white font-display mb-2">Welcome to LMS Application</CardTitle>
-            <CardDescription className="text-center text-gray-300">Knockturn Private Limited Leave Management System</CardDescription>
+            <CardTitle className="text-3xl text-center text-white font-display mb-2">
+              Welcome to LMS Application
+            </CardTitle>
+            <CardDescription className="text-center text-gray-300">
+              Knockturn Private Limited Leave Management System
+            </CardDescription>
           </CardHeader>
+
           <CardContent className="login-element">
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-300">Employee Code</label>
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-600 rounded-lg blur opacity-20 group-hover:opacity-50 transition duration-500"></div>
-                  <Input 
+                  <Input
                     {...form.register("code")}
-                    placeholder="e.g. A0001 or E0041" 
+                    placeholder="e.g. A0001 or E0041"
                     className="relative bg-black/40 border-white/10 text-white placeholder:text-gray-600 focus:border-primary/50 transition-all h-12"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
                   />
                 </div>
                 {form.formState.errors.code && (
                   <p className="text-red-400 text-xs mt-1">{form.formState.errors.code.message}</p>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-300">Password</label>
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-600 rounded-lg blur opacity-20 group-hover:opacity-50 transition duration-500"></div>
-                  <Input 
+                  <Input
                     {...form.register("password")}
-                    type="password" 
-                    placeholder="••••••••" 
+                    type="password"
+                    placeholder="••••••••"
                     className="relative bg-black/40 border-white/10 text-white placeholder:text-gray-600 focus:border-primary/50 transition-all h-12"
+                    autoComplete="current-password"
                   />
                 </div>
-                 {form.formState.errors.password && (
+                {form.formState.errors.password && (
                   <p className="text-red-400 text-xs mt-1">{form.formState.errors.password.message}</p>
                 )}
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold tracking-wide shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all duration-300 mt-6"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Authenticating..." : "LOGIN TO DASHBOARD"}
               </Button>
-              
+
               <div className="text-center mt-4 space-y-2">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setForgotPasswordOpen(true)}
-                  className="text-primary hover:text-primary/80 text-xs font-medium transition-colors" 
+                  className="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
                   data-testid="button-forgot-password"
                 >
                   Forgot Password?
                 </button>
-                <p className="text-xs text-muted-foreground">Restricted Access. Authorized Personnel Only.</p>
+                <p className="text-xs text-muted-foreground">
+                  Restricted Access. Authorized Personnel Only.
+                </p>
               </div>
             </form>
           </CardContent>
@@ -216,44 +238,31 @@ export default function Login() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Lock className="w-5 h-5 text-primary" />
-              Reset Your Password
+              Forgot Password
             </DialogTitle>
+            <DialogDescription>
+              Enter your employee code to receive a reset link
+            </DialogDescription>
           </DialogHeader>
+
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label className="text-gray-300">Old Password</Label>
+              <Label className="text-gray-300">Employee Code</Label>
               <Input
-                type="password"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                placeholder="Enter your current password"
+                value={employeeCodeForReset}
+                onChange={(e) => setEmployeeCodeForReset(e.target.value)}
+                placeholder="Enter your employee code"
                 className="bg-black/20 border-white/10 text-white"
-                data-testid="input-old-password"
+                autoCapitalize="characters"
+                autoCorrect="off"
               />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-gray-300">New Password</Label>
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter your new password"
-                className="bg-black/20 border-white/10 text-white"
-                data-testid="input-new-password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-gray-300">Confirm Password</Label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your new password"
-                className="bg-black/20 border-white/10 text-white"
-                data-testid="input-confirm-password"
-              />
+              <p className="text-xs text-gray-400">
+                We will send a reset link to your registered email
+              </p>
             </div>
           </div>
+
           <DialogFooter>
             <Button
               variant="outline"
@@ -262,12 +271,13 @@ export default function Login() {
             >
               Cancel
             </Button>
+
             <Button
-              onClick={handleResetPassword}
+              onClick={handleForgotPassword}
               className="bg-primary hover:bg-primary/90"
-              data-testid="button-reset-password"
+              disabled={sending}
             >
-              Reset Password
+              {sending ? "Sending..." : "Send Reset Link"}
             </Button>
           </DialogFooter>
         </DialogContent>

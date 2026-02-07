@@ -5,7 +5,7 @@ export interface EmailNotification {
   to: string[];
   subject: string;
   html: string;
-  type: "leave" | "permission";
+  type: "leave" | "permission" | "reset";
 }
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -121,6 +121,29 @@ export function generatePermissionNotificationEmail(employeeName: string, permis
       
       <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
       <p style="color: #666; font-size: 12px;">Please review and take action on this permission request in the Leave Manager application.</p>
+    </div>
+  `;
+}
+
+export function generateResetPasswordEmail(username: string, resetLink: string): string {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Password Reset Request</h2>
+      <p>Hello ${username},</p>
+      <p>You requested to reset your password.</p>
+
+      <p>
+        <a href="${resetLink}" 
+           style="display:inline-block;padding:12px 20px;background:#2563eb;color:white;text-decoration:none;border-radius:6px;">
+          Reset Password
+        </a>
+      </p>
+
+      <p>This link will expire in 15 minutes.</p>
+
+      <p style="font-size:12px;color:#666;">
+        If you didn’t request this, ignore this email.
+      </p>
     </div>
   `;
 }

@@ -343,20 +343,40 @@ export interface LeaveBalance {
   sick: { total: number; used: number; remaining: number };
 }
 
-export async function getLeaveBalance(employeeCode: string): Promise<LeaveBalance> {
+export async function getLeaveBalance(employeeCode: string, employeeId?: string): Promise<LeaveBalance> {
   try {
     const leaves = await getStoredLeaves();
+    const normalizedQueryCode = employeeCode?.toLowerCase();
+    const normalizedQueryId = employeeId?.toLowerCase();
+
     const employeeLeaves = leaves.filter(
-      l => l.employeeCode === employeeCode && l.status === 'Approved'
+      l => {
+        const leaveCode = l.employeeCode?.toLowerCase();
+        const leaveId = l.employeeId?.toLowerCase();
+
+        return (
+          (leaveCode === normalizedQueryCode || leaveCode === normalizedQueryId) ||
+          (leaveId === normalizedQueryId || leaveId === normalizedQueryCode)
+        ) && l.status === 'Approved';
+      }
     );
+
+    const calculateDays = (start: string, end: string) => {
+      const s = new Date(start);
+      const e = new Date(end);
+      if (isNaN(s.getTime()) || isNaN(e.getTime())) return 0;
+      const diffTime = Math.abs(e.getTime() - s.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      return diffDays;
+    };
 
     const casualUsed = employeeLeaves
       .filter(l => l.type === 'Casual')
-      .length;
+      .reduce((sum, l) => sum + calculateDays(l.startDate, l.endDate), 0);
 
     const sickUsed = employeeLeaves
       .filter(l => l.type === 'Sick')
-      .length;
+      .reduce((sum, l) => sum + calculateDays(l.startDate, l.endDate), 0);
 
     return {
       casual: {

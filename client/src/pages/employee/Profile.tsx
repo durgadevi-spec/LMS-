@@ -3,13 +3,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { User as UserIcon, Mail, Briefcase, Building, AlertCircle, Calendar } from 'lucide-react';
 import { ALL_HOLIDAYS } from '@/lib/data';
-import { useState } from 'react';
+import { getLeaveBalance } from '@/lib/storage';
+import { LeaveBalanceCard } from '@/components/LeaveBalanceCard';
+import { useState, useEffect } from 'react';
 
 export default function Profile() {
   const { user } = useAuth();
-  const [_, setDummy] = useState(0);
+  const [balance, setBalance] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadBalance = async () => {
+      if (user?.code || user?.id) {
+        try {
+          const data = await getLeaveBalance(user.code, user.id);
+          setBalance(data);
+        } catch (err) {
+          console.error('Failed to load balance', err);
+        }
+      }
+      setLoading(false);
+    };
+    loadBalance();
+  }, [user]);
+
   if (!user) return null;
-  
+
   // Get upcoming holidays (from current date onwards)
   const today = new Date();
   const upcomingHolidays = ALL_HOLIDAYS
@@ -44,7 +63,7 @@ export default function Profile() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Productivity Overview - placeholder (no data) */}
+        {/* Productivity Overview */}
         <Card className="bg-card/40 backdrop-blur border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Productivity Overview</CardTitle>
@@ -70,36 +89,13 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        {/* Leave Balance - placeholder (no data) */}
-        <Card className="bg-card/40 backdrop-blur border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">Leave Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Personal (Casual) Leave</span>
-                  <span className="text-white font-mono">— / —</span>
-                </div>
-                <Progress value={0} className="h-2 bg-blue-900/50" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Sick Leave</span>
-                  <span className="text-white font-mono">— / —</span>
-                </div>
-                <Progress value={0} className="h-2 bg-purple-900/50" />
-              </div>
-              <div className="pt-2 border-t border-white/5 text-xs text-muted-foreground flex items-center gap-2">
-                <AlertCircle className="w-3 h-3 text-primary" />
-                <span>Balances reset on Jan 1st of every year.</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <LeaveBalanceCard
+          balance={balance}
+          loading={loading}
+          className="bg-card/40 backdrop-blur border-white/10"
+        />
 
-        {/* Holidays card (kept) */}
+        {/* Holidays & Sundays Card */}
         <Card className="bg-card/40 backdrop-blur border-white/10">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
@@ -108,30 +104,32 @@ export default function Profile() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-             <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="text-gray-300">Public Holiday</span>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <span className="text-gray-300">Public Holiday</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <span className="text-gray-300">Sunday (Off)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="text-gray-300">Worked on Off Day</span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-white/5 space-y-2">
+              <p className="text-xs text-gray-400 font-semibold">Upcoming Holidays</p>
+              {upcomingHolidays.map((holiday) => (
+                <div key={holiday.date} className="flex justify-between items-center text-xs">
+                  <span className="text-gray-300">{holiday.name}</span>
+                  <span className="text-gray-500">
+                    {new Date(holiday.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ({new Date(holiday.date).toLocaleDateString('en-US', { weekday: 'long' })})
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <span className="text-gray-300">Sunday (Off)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="text-gray-300">Worked on Off Day</span>
-                </div>
-             </div>
-             
-             <div className="pt-3 border-t border-white/5 space-y-2">
-               <p className="text-xs text-gray-400 font-semibold">Upcoming Holidays</p>
-               {upcomingHolidays.map((holiday) => (
-                 <div key={holiday.date} className="flex justify-between items-center text-xs">
-                   <span className="text-gray-300">{holiday.name}</span>
-                   <span className="text-gray-500">{new Date(holiday.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                 </div>
-               ))}
-             </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>

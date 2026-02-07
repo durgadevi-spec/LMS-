@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Download, Mail, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { StatCards } from '@/components/StatCards';
 
 export default function Reports() {
   const [leaves, setLeaves] = useState<any[]>([]);
@@ -44,7 +45,7 @@ export default function Reports() {
         const compOffCount = userLeaves.filter(l => l.type === 'Comp Off').length;
         const lwpCount = userLeaves.filter(l => l.type === 'LWP').length;
         const earnedCount = userLeaves.filter(l => l.type === 'Earned').length;
-        
+
         return {
           name: user.name,
           code: user.code,
@@ -157,7 +158,7 @@ export default function Reports() {
     .map(user => {
       const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
       const userPermissions = permissions.filter(p => p.employeeCode === user.code && p.status === 'Approved');
-      
+
       const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
       const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
       const odCount = userLeaves.filter(l => l.type === 'OD').length;
@@ -182,7 +183,7 @@ export default function Reports() {
 
   const filteredData = reportData.filter(item =>
     (item.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     item.user.code.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      item.user.code.toLowerCase().includes(searchTerm.toLowerCase())) &&
     (!searchDepartment || item.user.designation.toLowerCase().includes(searchDepartment.toLowerCase()))
   );
 
@@ -204,24 +205,24 @@ export default function Reports() {
           <p className="text-muted-foreground">Comprehensive view of all employee leaves and on-duty requests</p>
         </div>
         <div className="flex gap-3 flex-wrap">
-          <Button 
+          <Button
             onClick={exportToExcel}
             className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]"
             data-testid="button-export-excel"
           >
             <Download className="w-4 h-4 mr-2" /> Export Excel
           </Button>
-          <Button 
+          <Button
             onClick={shareViaEmail}
-            variant="outline" 
+            variant="outline"
             className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
             data-testid="button-share-email"
           >
             <Mail className="w-4 h-4 mr-2" /> Email
           </Button>
-          <Button 
+          <Button
             onClick={shareViaWhatsApp}
-            variant="outline" 
+            variant="outline"
             className="border-green-500/30 text-green-400 hover:bg-green-500/10"
             data-testid="button-share-whatsapp"
           >
@@ -233,23 +234,23 @@ export default function Reports() {
       <div className="flex flex-col md:flex-row gap-4 w-full">
         <div className="relative w-full md:flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input 
-            placeholder="Search Employee Name or Code..." 
+          <Input
+            placeholder="Search Employee Name or Code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 bg-black/20 border-white/10 text-white focus:border-primary/50"
             data-testid="input-search-employee"
           />
         </div>
-        <Input 
-          placeholder="Filter by Designation..." 
+        <Input
+          placeholder="Filter by Designation..."
           value={searchDepartment}
           onChange={(e) => setSearchDepartment(e.target.value)}
           className="bg-black/20 border-white/10 text-white focus:border-primary/50"
           data-testid="input-search-designation"
         />
-        <Input 
-          type="date" 
+        <Input
+          type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
           className="bg-black/20 border-white/10 text-white focus:border-primary/50"
@@ -257,61 +258,14 @@ export default function Reports() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <Card className="bg-card/40 backdrop-blur border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Total Casual</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-400">{reportData.reduce((sum, r) => sum + r.casual, 0)}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/40 backdrop-blur border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Total Sick</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-400">{reportData.reduce((sum, r) => sum + r.sick, 0)}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/40 backdrop-blur border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Total OD</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-400">{reportData.reduce((sum, r) => sum + r.od, 0)}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/40 backdrop-blur border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Total Comp Off</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-400">{reportData.reduce((sum, r) => sum + r.compOff, 0)}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/40 backdrop-blur border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Total Permission</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-400">{reportData.reduce((sum, r) => sum + (r.permission || 0), 0)}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/40 backdrop-blur border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-400">Total Leaves</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">{reportData.reduce((sum, r) => sum + r.total, 0)}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <StatCards stats={[
+        { label: 'Total Casual', value: reportData.reduce((sum, r) => sum + r.casual, 0), type: 'info' },
+        { label: 'Total Sick', value: reportData.reduce((sum, r) => sum + r.sick, 0), type: 'approved' },
+        { label: 'Total OD', value: reportData.reduce((sum, r) => sum + r.od, 0), type: 'rejected' },
+        { label: 'Total Comp Off', value: reportData.reduce((sum, r) => sum + r.compOff, 0), type: 'approved' },
+        { label: 'Total Permission', value: reportData.reduce((sum, r) => sum + (r.permission || 0), 0), type: 'pending' },
+        { label: 'Total Leaves', value: reportData.reduce((sum, r) => sum + r.total, 0), type: 'total-leaves' },
+      ]} />
 
       <Card className="bg-card/40 backdrop-blur border-white/10">
         <CardContent className="p-0">

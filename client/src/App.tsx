@@ -13,6 +13,7 @@ import ViewPermissions from '@/pages/admin/ViewPermissions';
 import Charts from '@/pages/admin/Charts';
 import Employees from '@/pages/admin/Employees';
 import Reports from '@/pages/Reports';
+import ResetPassword from '@/pages/ResetPassword';
 
 function ProtectedRoute({ component: Component, role }: { component: any, role?: 'Admin' | 'Employee' | 'HR' }) {
   const { user, isLoading } = useAuth();
@@ -25,7 +26,7 @@ function ProtectedRoute({ component: Component, role }: { component: any, role?:
     // But for this mock, returning null and letting the parent re-render or the user click login is fine
     // However, we can use a redirect effect here
     if (window.location.pathname !== '/') {
-        setTimeout(() => setLocation('/'), 0);
+      setTimeout(() => setLocation('/'), 0);
     }
     return null;
   }
@@ -36,28 +37,28 @@ function ProtectedRoute({ component: Component, role }: { component: any, role?:
   // - Admin role requires user.role === 'Admin'
   // - HR role requires user.role === 'HR'
   // - Employee role allows 'Employee', 'HR' (since HR is also an employee), and 'Admin' (optional, but Admin usually has separate dash)
-  
+
   if (role) {
     if (role === 'Admin' && user.role !== 'Admin' && user.role !== 'HR') {
-         // Allow HR to access Admin pages like View Leaves and View Permissions
-         return (
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-white p-8 text-center bg-card/50 rounded-lg border border-white/10">
-              <p className="text-lg font-semibold">Unauthorized Access</p>
-              <p className="text-sm text-gray-400 mt-2">You do not have permission to access this page.</p>
-            </div>
+      // Allow HR to access Admin pages like View Leaves and View Permissions
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-white p-8 text-center bg-card/50 rounded-lg border border-white/10">
+            <p className="text-lg font-semibold">Unauthorized Access</p>
+            <p className="text-sm text-gray-400 mt-2">You do not have permission to access this page.</p>
           </div>
-         );
+        </div>
+      );
     }
     if (role === 'Employee' && (user.role !== 'Employee' && user.role !== 'HR' && user.role !== 'Admin')) {
-        return (
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-white p-8 text-center bg-card/50 rounded-lg border border-white/10">
-              <p className="text-lg font-semibold">Unauthorized Access</p>
-              <p className="text-sm text-gray-400 mt-2">You do not have permission to access this page.</p>
-            </div>
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-white p-8 text-center bg-card/50 rounded-lg border border-white/10">
+            <p className="text-lg font-semibold">Unauthorized Access</p>
+            <p className="text-sm text-gray-400 mt-2">You do not have permission to access this page.</p>
           </div>
-        );
+        </div>
+      );
     }
   }
 
@@ -72,7 +73,8 @@ function AppRoutes() {
   return (
     <Switch>
       <Route path="/" component={Login} />
-      
+      <Route path="/reset-password" component={ResetPassword} />
+
       {/* Employee Routes - Accessible by Employee and HR */}
       <Route path="/employee/dashboard">
         <ProtectedRoute component={EmployeeDashboard} role="Employee" />
@@ -96,19 +98,19 @@ function AppRoutes() {
       </Route>
       <Route path="/admin/view-leaves">
         {/* HR needs access to View Leaves */}
-        <ProtectedRoute component={ViewLeaves} role="Admin" /> 
+        <ProtectedRoute component={ViewLeaves} role="Admin" />
       </Route>
       <Route path="/admin/view-permissions">
         <ProtectedRoute component={ViewPermissions} role="Admin" />
       </Route>
       <Route path="/admin/departments">
-         <ProtectedRoute component={Employees} role="Admin" />
+        <ProtectedRoute component={Employees} role="Admin" />
       </Route>
-       <Route path="/admin/employees">
-         <ProtectedRoute component={Employees} role="Admin" />
+      <Route path="/admin/employees">
+        <ProtectedRoute component={Employees} role="Admin" />
       </Route>
-       <Route path="/admin/charts">
-         <ProtectedRoute component={Charts} role="Admin" />
+      <Route path="/admin/charts">
+        <ProtectedRoute component={Charts} role="Admin" />
       </Route>
 
       {/* Reports - Accessible by Admin and HR */}

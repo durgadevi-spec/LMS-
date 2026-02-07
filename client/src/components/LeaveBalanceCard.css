@@ -1,0 +1,116 @@
+/* Progress bar and inner element styles only */
+.leave-type-item {
+    margin-bottom: 1.5rem;
+}
+
+.leave-type-item:last-child {
+    margin-bottom: 0;
+}
+
+.type-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 0.75rem;
+}
+
+.type-label {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.type-ratio {
+    color: #F8FAFC;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.ratio-used {
+    font-size: 1.125rem;
+    font-weight: 800;
+}
+
+.ratio-total {
+    color: #64748B;
+    font-size: 0.875rem;
+}
+
+.progress-track {
+    height: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+    position: relative;
+}
+
+/* Personal Leave - Neon Blue */
+.fill-personal {
+    background: linear-gradient(90deg, #1D4ED8, #3B82F6);
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+}
+
+/* Sick Leave - Neon Purple */
+.fill-sick {
+    background: linear-gradient(90deg, #6D28D9, #8B5CF6);
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+}
+
+/* Shine animation */
+.progress-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.25),
+            transparent);
+    animation: bar-shine 3s infinite;
+}
+
+@keyframes bar-shine {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.balance-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.balance-footer .reset-text {
+    font-size: 0.75rem;
+    color: #64748B;
+}
+
+.balance-footer .alert-icon {
+    width: 14px;
+    height: 14px;
+    color: #06B6D4;
+}
+
+@media (max-width: 640px) {
+    .leave-balance-card {
+        padding: 1.25rem;
+    }
+}

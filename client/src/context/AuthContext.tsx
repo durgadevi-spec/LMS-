@@ -23,61 +23,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (code: string, password?: string) => {
-    // Query Supabase users table for matching code and optional password
     try {
       const normalizedCode = code.toString().trim();
 
-      // Try to find existing user by username OR user_id (handle different DB states)
-      let selectQuery = supabase.from('users').select('*').or(`username.eq.${normalizedCode},user_id.eq.${normalizedCode}`).limit(1);
-      if (password) selectQuery = selectQuery.eq('password', password);
-      const { data, error } = await selectQuery.maybeSingle();
+      // 1. Require both fields
+      if (!normalizedCode || !password) {
+        return false;
+      }
+
+      // 2. Fetch user by employee code
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .or(`username.eq.${normalizedCode},user_id.eq.${normalizedCode}`)
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
         console.error('Supabase login error', error);
         return false;
       }
 
-      let dbUser: any = data;
-
-      // If user not found, create a minimal employee row so employee logins persist to DB
-      if (!dbUser) {
-        const insertPayload = {
-          user_id: normalizedCode,
-          username: normalizedCode,
-          role: 'employee',
-          password: password ?? null,
-        };
-
-        // Use upsert to avoid duplicate-key errors when multiple clients
-        // attempt to create the same user concurrently.
-        const { data: inserted, error: insertErr } = await supabase
-          .from('users')
-          .upsert(insertPayload, { onConflict: 'user_id' })
-          .select()
-          .maybeSingle();
-
-        if (insertErr) {
-          console.error('Supabase upsert user error', insertErr);
-          return false;
-        }
-        dbUser = inserted;
+      // 3. If user not found → fail
+      if (!data) {
+        return false;
       }
 
-      // Map DB role (which may be lowercase) to app Role type
-      const dbRole = (dbUser?.role || 'employee').toString().toLowerCase();
-      const mappedRole: Role = dbRole === 'admin' ? 'Admin' : dbRole === 'hr' ? 'HR' : 'Employee';
+      // 4. Check password strictly
+      if (data.password !== password) {
+        return false;
+      }
+
+      // 5. Map role
+      const dbRole = (data.role || 'employee').toString().toLowerCase();
+      const mappedRole: Role =
+        dbRole === 'admin' ? 'Admin' : dbRole === 'hr' ? 'HR' : 'Employee';
 
       const foundUser: User = {
-        id: String(dbUser?.user_id || dbUser?.username || ''),
-        code: dbUser?.username || dbUser?.user_id || '',
-        name: dbUser?.name || dbUser?.username || '',
+        id: String(data.user_id || data.username),
+        code: data.username || data.user_id,
+        name: data.name || data.username,
         role: mappedRole,
-        designation: dbUser?.designation || '',
-        email: dbUser?.email || undefined,
+        designation: data.designation || '',
+        email: data.email || undefined,
       };
 
       setUser(foundUser);
       return true;
+
     } catch (err) {
       console.error('Login failed', err);
       return false;
