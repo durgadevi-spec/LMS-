@@ -12,6 +12,8 @@ import ViewLeaves from '@/pages/admin/ViewLeaves';
 import ViewPermissions from '@/pages/admin/ViewPermissions';
 import Charts from '@/pages/admin/Charts';
 import Employees from '@/pages/admin/Employees';
+import ApprovedLeaves from '@/pages/admin/ApprovedLeaves';
+import ApprovedPermissions from '@/pages/admin/ApprovedPermissions';
 import Reports from '@/pages/Reports';
 import ResetPassword from '@/pages/ResetPassword';
 
@@ -112,6 +114,12 @@ function AppRoutes() {
       <Route path="/admin/charts">
         <ProtectedRoute component={Charts} role="Admin" />
       </Route>
+      <Route path="/admin/approved-leaves">
+        <ProtectedRoute component={ApprovedLeaves} role="Admin" />
+      </Route>
+      <Route path="/admin/approved-permissions">
+        <ProtectedRoute component={ApprovedPermissions} role="Admin" />
+      </Route>
 
       {/* Reports - Accessible by Admin and HR */}
       <Route path="/reports">
@@ -125,11 +133,15 @@ function AppRoutes() {
   );
 }
 
+import { ThemeProvider } from '@/context/ThemeContext';
+
 function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

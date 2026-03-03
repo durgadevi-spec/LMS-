@@ -5,10 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useRef, useState } from 'react';
-import { Lock } from 'lucide-react';
 import gsap from 'gsap';
 import {
   Dialog,
@@ -21,6 +20,9 @@ import {
 import { Label } from '@/components/ui/label';
 
 import logoUrl from '@assets/Screenshot_2025-10-15_183825_1765652253224.png';
+import illustrationUrl from '@assets/login_illustration_final.png';
+import { User, Lock, Check, Eye, EyeOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const loginSchema = z.object({
   code: z.string().min(1, "Employee Code is required"),
@@ -38,6 +40,8 @@ export default function Login() {
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [employeeCodeForReset, setEmployeeCodeForReset] = useState('');
   const [sending, setSending] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -63,11 +67,11 @@ export default function Login() {
     const tl = gsap.timeline();
     tl.fromTo(
       containerRef.current,
-      { opacity: 0, scale: 0.95 },
-      { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }
+      { opacity: 0, scale: 0.98, y: 30 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: "power3.out" }
     ).fromTo(
       ".login-element",
-      { opacity: 0, y: 20 },
+      { opacity: 0, y: 15 },
       { opacity: 1, y: 0, stagger: 0.1, duration: 0.5 },
       "-=0.4"
     );
@@ -83,7 +87,7 @@ export default function Login() {
       toast({
         title: "Welcome back",
         description: "Login successful",
-        className: "bg-primary/10 border-primary/20 text-white"
+        className: "bg-primary/10 border-primary/20 text-primary font-medium"
       });
       return;
     }
@@ -145,136 +149,175 @@ export default function Login() {
   if (isLoading) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]" />
-      </div>
-
-      <div ref={containerRef} className="w-full max-w-md px-4 relative z-10">
-        <div className="mb-8 text-center login-element flex flex-col items-center">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50/50 p-6 font-sans">
+      {/* Main Container mirroring the reference image */}
+      <div
+        ref={containerRef}
+        className="bg-white w-full max-w-6xl rounded-[3rem] shadow-[0_25px_80px_-20px_rgba(0,0,0,0.15)] flex flex-col lg:flex-row overflow-hidden border border-slate-100/50"
+      >
+        {/* Left Section: Illustration & Quote */}
+        <div className="w-full lg:w-1/2 p-12 lg:p-20 flex flex-col items-center justify-center bg-white border-r border-slate-50">
           <img
-            src={logoUrl}
-            alt="Knockturn Logo"
-            className="w-64 h-auto object-contain mb-4 drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+            src={illustrationUrl}
+            alt="Leave Management Illustration"
+            className="w-full h-auto mb-16 login-element max-w-md mx-auto"
           />
+          <div className="text-center space-y-2 login-element">
+            <h2 className="text-3xl font-display font-bold text-slate-800 tracking-tight leading-tight">
+              Simplify Leave Tracking
+            </h2>
+            <h2 className="text-3xl font-display font-bold text-slate-800 tracking-tight leading-tight">
+              & Boost Productivity.
+            </h2>
+          </div>
         </div>
 
-        <Card className="bg-card/50 backdrop-blur-xl border-white/10 shadow-2xl">
-          <CardHeader className="space-y-1 login-element">
-            <CardTitle className="text-3xl text-center text-white font-display mb-2">
-              Welcome to LMS Application
-            </CardTitle>
-            <CardDescription className="text-center text-gray-300">
-              Knockturn Private Limited Leave Management System
-            </CardDescription>
-          </CardHeader>
+        {/* Right Section: Form area */}
+        <div className="w-full lg:w-1/2 p-8 lg:p-16 flex flex-col items-center lg:items-stretch justify-center">
+          {/* Logo area - Exact, Centered, and Bigger */}
+          <div className="flex flex-col items-center mb-12 login-element w-full">
+            <div className="bg-black p-3 px-12 rounded-xl shadow-2xl mb-4 flex items-center justify-center">
+              <img src={logoUrl} alt="Knockturn Private Limited" className="h-14 w-auto object-contain" />
+            </div>
+            <p className="text-slate-400 font-bold text-[10px] tracking-[0.3em] uppercase opacity-70">Leave Management System</p>
+          </div>
 
-          <CardContent className="login-element">
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300">Employee Code</label>
-                <div className="relative group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-600 rounded-lg blur opacity-20 group-hover:opacity-50 transition duration-500"></div>
-                  <Input
-                    {...form.register("code")}
-                    placeholder="e.g. A0001 or E0041"
-                    className="relative bg-black/40 border-white/10 text-white placeholder:text-gray-600 focus:border-primary/50 transition-all h-12"
-                    autoCapitalize="characters"
-                    autoCorrect="off"
-                  />
-                </div>
-                {form.formState.errors.code && (
-                  <p className="text-red-400 text-xs mt-1">{form.formState.errors.code.message}</p>
-                )}
-              </div>
+          <div className="max-w-md w-full mx-auto space-y-10">
+            <div className="text-center login-element">
+              <h1 className="text-4xl font-display font-bold text-slate-900 mb-2 tracking-tight">Welcome Back!</h1>
+              <p className="text-slate-500 font-medium tracking-tight">Simplify Leave Tracking & Boost Productivity.</p>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300">Password</label>
-                <div className="relative group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-600 rounded-lg blur opacity-20 group-hover:opacity-50 transition duration-500"></div>
-                  <Input
-                    {...form.register("password")}
-                    type="password"
-                    placeholder="••••••••"
-                    className="relative bg-black/40 border-white/10 text-white placeholder:text-gray-600 focus:border-primary/50 transition-all h-12"
-                    autoComplete="current-password"
-                  />
-                </div>
-                {form.formState.errors.password && (
-                  <p className="text-red-400 text-xs mt-1">{form.formState.errors.password.message}</p>
-                )}
-              </div>
+            <Card className="bg-white/70 backdrop-blur-xl border border-slate-200/50 shadow-[0_30px_100px_-20px_rgba(0,0,0,0.08)] rounded-[2.5rem] p-6 lg:p-10 login-element overflow-hidden">
+              <CardContent className="p-0 space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-2 group">
+                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2.5 ml-1 transition-colors group-focus-within:text-primary">
+                      <User className="w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                      Employee Code
+                    </label>
+                    <div className="relative">
+                      <Input
+                        {...form.register("code")}
+                        placeholder="e.g. A0001 or E0041"
+                        className="bg-slate-50 border-slate-200/60 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all h-14 rounded-2xl px-5 font-bold text-lg shadow-sm"
+                        autoCapitalize="characters"
+                      />
+                    </div>
+                    {form.formState.errors.code && (
+                      <p className="text-red-500 text-xs mt-1.5 ml-1 font-bold">{form.formState.errors.code.message}</p>
+                    )}
+                  </div>
 
-              <Button
-                type="submit"
-                className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold tracking-wide shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all duration-300 mt-6"
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting ? "Authenticating..." : "LOGIN TO DASHBOARD"}
-              </Button>
+                  <div className="space-y-2 group">
+                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2.5 ml-1 transition-colors group-focus-within:text-primary">
+                      <Lock className="w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                      Password
+                    </label>
+                    <div className="relative">
+                      <Input
+                        {...form.register("password")}
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="bg-slate-50 border-slate-200/60 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all h-14 rounded-2xl px-5 pr-12 font-bold text-lg shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors focus:outline-none"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    {form.formState.errors.password && (
+                      <p className="text-red-500 text-xs mt-1.5 ml-1 font-bold">{form.formState.errors.password.message}</p>
+                    )}
+                  </div>
 
-              <div className="text-center mt-4 space-y-2">
-                <button
-                  type="button"
-                  onClick={() => setForgotPasswordOpen(true)}
-                  className="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
-                  data-testid="button-forgot-password"
-                >
-                  Forgot Password?
-                </button>
-                <p className="text-xs text-muted-foreground">
-                  Restricted Access. Authorized Personnel Only.
-                </p>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                  <div className="flex items-center gap-3 py-1 login-element">
+                    <div
+                      className="flex items-center gap-3 cursor-pointer select-none"
+                      onClick={() => setRememberMe(!rememberMe)}
+                    >
+                      <div className={cn(
+                        "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                        rememberMe ? "border-green-500 bg-green-500" : "border-slate-300 bg-white"
+                      )}>
+                        {rememberMe && <Check className="w-3.5 h-3.5 text-white stroke-[4px]" />}
+                      </div>
+                      <span className="text-sm font-bold text-slate-500">Remember me</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <Button
+                      type="submit"
+                      className="w-full h-14 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xl tracking-wide rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
+                      disabled={form.formState.isSubmitting}
+                    >
+                      {form.formState.isSubmitting ? "AUTHENTICATING..." : "LOGIN"}
+                    </Button>
+                  </div>
+
+                  <div className="text-center pt-2 space-y-12">
+                    <button
+                      type="button"
+                      onClick={() => setForgotPasswordOpen(true)}
+                      className="text-[#2563EB] hover:underline text-sm font-bold transition-all"
+                    >
+                      Forgot Password?
+                    </button>
+
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] flex items-center justify-center opacity-80">
+                      Restricted Access. Authorized Personal Only.
+                    </p>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       {/* Forgot Password Dialog */}
       <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
-        <DialogContent className="bg-card border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5 text-primary" />
+        <DialogContent className="bg-white border-slate-100 text-slate-900 rounded-3xl p-8 max-w-md">
+          <DialogHeader className="space-y-3">
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-2">
+              <Lock className="w-6 h-6 text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-bold tracking-tight">
               Forgot Password
             </DialogTitle>
-            <DialogDescription>
-              Enter your employee code to receive a reset link
+            <DialogDescription className="text-slate-500 font-medium">
+              Enter your employee code to receive a reset link via your registered email.
             </DialogDescription>
           </DialogHeader>
 
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label className="text-gray-300">Employee Code</Label>
+          <div className="space-y-5 py-6">
+            <div className="space-y-2.5">
+              <Label className="text-slate-800 font-bold ml-1">Employee Code</Label>
               <Input
                 value={employeeCodeForReset}
                 onChange={(e) => setEmployeeCodeForReset(e.target.value)}
                 placeholder="Enter your employee code"
-                className="bg-black/20 border-white/10 text-white"
+                className="bg-slate-50 border-slate-100 text-slate-900 h-12 rounded-xl"
                 autoCapitalize="characters"
-                autoCorrect="off"
               />
-              <p className="text-xs text-gray-400">
-                We will send a reset link to your registered email
-              </p>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-3 sm:gap-0">
             <Button
               variant="outline"
               onClick={() => setForgotPasswordOpen(false)}
-              className="text-gray-300"
+              className="rounded-xl h-12 border-slate-200 text-slate-600 font-bold px-6"
             >
               Cancel
             </Button>
-
             <Button
               onClick={handleForgotPassword}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl px-6"
               disabled={sending}
             >
               {sending ? "Sending..." : "Send Reset Link"}

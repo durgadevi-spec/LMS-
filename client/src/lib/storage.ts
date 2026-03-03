@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { format } from 'date-fns';
 import { User, LeaveRequest, INITIAL_LEAVES, INITIAL_USERS } from './data';
 
 // Backwards-compatible synchronous getter for places that still call
@@ -55,7 +56,7 @@ export async function getStoredLeaves(): Promise<LeaveRequest[]> {
       reasonForAction: row.reason_for_action || undefined,
       actionBy: row.action_by || undefined,
       actionDate: row.action_date || undefined,
-      appliedDate: row.created_at ? new Date(row.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      appliedDate: row.created_at ? format(new Date(row.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
     }));
 
     // Enrich mapped rows: if employeeName is missing or looks like an ID (e.g., E0053),
@@ -233,7 +234,7 @@ export async function getStoredPermissions(): Promise<PermissionRequest[]> {
       reason: row.reason || '',
       additionalInfo: row.additional_info || undefined,
       status: row.status || 'Pending',
-      appliedDate: row.created_at ? new Date(row.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      appliedDate: row.created_at ? format(new Date(row.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
       actionBy: row.action_by || undefined,
       actionDate: row.action_date || undefined,
       reasonForAction: row.reason_for_action || undefined,

@@ -44,17 +44,17 @@ export default function Profile() {
           <span className="text-5xl font-bold text-white">{user.name.charAt(0)}</span>
         </div>
         <div>
-          <h2 className="text-4xl font-display font-bold text-white mb-2">{user.name}</h2>
+          <h2 className="text-4xl font-bold text-slate-900 mb-2">{user.name}</h2>
           <div className="flex flex-wrap gap-4 mt-4">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-600 font-medium">
               <Briefcase className="w-4 h-4 text-primary" />
               <span>{user.code}</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-600 font-medium">
               <Building className="w-4 h-4 text-primary" />
               <span>{user.designation}</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-600 font-medium">
               <UserIcon className="w-4 h-4 text-primary" />
               <span>{user.role}</span>
             </div>
@@ -64,24 +64,24 @@ export default function Profile() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Productivity Overview */}
-        <Card className="bg-card/40 backdrop-blur border-white/10">
+        <Card className="bg-white border-slate-200 shadow-sm transition-all hover:shadow-md">
           <CardHeader>
-            <CardTitle className="text-white">Productivity Overview</CardTitle>
+            <CardTitle className="text-slate-900">Productivity Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Worked Days vs Target</span>
-                <span className="text-gray-400 font-bold">— / — Days</span>
+                <span className="text-slate-500 font-medium">Worked Days vs Target</span>
+                <span className="text-slate-900 font-bold">— / — Days</span>
               </div>
               <Progress value={0} className="h-2 bg-primary/20" />
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                 <div>
-                  <p className="text-sm text-muted-foreground">Approved Leaves</p>
-                  <p className="text-2xl font-bold text-white">—</p>
+                  <p className="text-sm text-slate-500 font-medium">Approved Leaves</p>
+                  <p className="text-2xl font-bold text-slate-900">—</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Attendance Rate</p>
+                  <p className="text-sm text-slate-500 font-medium">Attendance Rate</p>
                   <p className="text-2xl font-bold text-primary">—</p>
                 </div>
               </div>
@@ -92,13 +92,13 @@ export default function Profile() {
         <LeaveBalanceCard
           balance={balance}
           loading={loading}
-          className="bg-card/40 backdrop-blur border-white/10"
+          className="bg-white border-slate-200 shadow-sm"
         />
 
         {/* Holidays & Sundays Card */}
-        <Card className="bg-card/40 backdrop-blur border-white/10">
+        <Card className="bg-white border-slate-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-slate-900 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-primary" />
               Holidays & Sundays
             </CardTitle>
@@ -107,25 +107,25 @@ export default function Profile() {
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <span className="text-gray-300">Public Holiday</span>
+                <span className="text-slate-600 font-medium">Public Holiday</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <span className="text-gray-300">Sunday (Off)</span>
+                <span className="text-slate-600 font-medium">Sunday (Off)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="text-gray-300">Worked on Off Day</span>
+                <span className="text-slate-600 font-medium">Worked on Off Day</span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-white/5 space-y-2">
-              <p className="text-xs text-gray-400 font-semibold">Upcoming Holidays</p>
+            <div className="pt-3 border-t border-slate-100 space-y-2">
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Upcoming Holidays</p>
               {upcomingHolidays.map((holiday) => (
-                <div key={holiday.date} className="flex justify-between items-center text-xs">
-                  <span className="text-gray-300">{holiday.name}</span>
-                  <span className="text-gray-500">
-                    {new Date(holiday.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ({new Date(holiday.date).toLocaleDateString('en-US', { weekday: 'long' })})
+                <div key={holiday.date} className="flex justify-between items-center text-xs py-1 border-b border-slate-50 last:border-0">
+                  <span className="text-slate-700 font-medium">{holiday.name}</span>
+                  <span className="text-slate-500">
+                    {new Date(holiday.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                   </span>
                 </div>
               ))}

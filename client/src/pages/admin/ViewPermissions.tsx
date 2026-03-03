@@ -87,7 +87,9 @@ export default function ViewPermissions() {
     toast({
       title: `Permission ${status}`,
       description: `Request has been ${status.toLowerCase()}.`,
-      className: status === 'Approved' ? "bg-green-500/10 border-green-500/20 text-white" : "bg-red-500/10 border-red-500/20 text-white"
+      className: status === 'Approved'
+        ? "bg-green-500/10 border-green-500/20 text-green-700 font-medium"
+        : "bg-red-500/10 border-red-500/20 text-red-700 font-medium"
     });
 
     setRejectReason('');
@@ -119,8 +121,8 @@ export default function ViewPermissions() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-3xl font-display font-bold text-white mb-2">View Pending Permissions</h2>
-          <p className="text-muted-foreground">Review and take action on permission requests</p>
+          <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">View Pending Permissions</h2>
+          <p className="text-slate-600">Review and take action on permission requests</p>
         </div>
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -128,63 +130,63 @@ export default function ViewPermissions() {
             placeholder="Search by Name, Code, Type..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-black/20 border-white/10 text-white focus:border-primary/50"
+            className="pl-10 bg-white border-slate-200 text-slate-900 focus:border-primary/50"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
         {filteredPermissions.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground bg-card/20 rounded-lg border border-white/5">
+          <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-lg border border-slate-100">
             <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
             No pending permission requests found.
           </div>
         ) : (
           filteredPermissions.map((permission) => (
-            <Card key={permission.id} className="bg-card/40 backdrop-blur border-white/5 hover:border-primary/50 transition-all duration-300">
+            <Card key={permission.id} className="bg-white border-slate-200 hover:border-primary/50 transition-all duration-300 shadow-sm">
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                          <p className="font-semibold text-white">{permission.employeeName ? `${permission.employeeName} (${permission.employeeId || permission.employeeCode})` : (permission.employeeCode || permission.employeeId)}</p>
-                          <div className="flex items-center gap-2">
-                            <Badge className={`${getPermissionTypeColor(permission.type)} border`}>{permission.type}</Badge>
-                            <Badge variant="outline" className="text-primary border-primary/20">{permission.employeeId || permission.employeeCode}</Badge>
-                          </div>
+                      <div className="flex items-center gap-3">
+                        <p className="font-semibold text-slate-900">{permission.employeeName ? `${permission.employeeName} (${permission.employeeId || permission.employeeCode})` : (permission.employeeCode || permission.employeeId)}</p>
+                        <div className="flex items-center gap-2">
+                          <Badge className={`${getPermissionTypeColor(permission.type)} border`}>{permission.type}</Badge>
+                          <Badge variant="outline" className="text-primary border-primary/20">{permission.employeeId || permission.employeeCode}</Badge>
                         </div>
+                      </div>
                     </div>
                     {/* type and id shown above; keep layout consistent */}
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 px-3 bg-black/20 rounded-lg">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 px-3 bg-slate-50 rounded-lg border border-slate-100">
                     <div>
-                      <p className="text-xs text-gray-400">Start Time</p>
-                      <p className="text-sm font-medium text-white">{permission.startTime}</p>
+                      <p className="text-xs text-slate-500 font-medium">Start Time</p>
+                      <p className="text-sm font-semibold text-slate-900">{permission.startTime}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">End Time</p>
-                      <p className="text-sm font-medium text-white">{permission.endTime}</p>
+                      <p className="text-xs text-slate-500 font-medium">End Time</p>
+                      <p className="text-sm font-semibold text-slate-900">{permission.endTime}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">Applied Date</p>
-                      <p className="text-sm font-medium text-white">{permission.appliedDate}</p>
+                      <p className="text-xs text-slate-500 font-medium">Applied Date</p>
+                      <p className="text-sm font-semibold text-slate-900">{permission.appliedDate}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">Status</p>
+                      <p className="text-xs text-slate-500 font-medium">Status</p>
                       <Badge variant="secondary" className="mt-1">{permission.status}</Badge>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-300 mb-1">Reason:</p>
-                    <p className="text-sm text-gray-400 bg-black/20 p-3 rounded">{permission.reason}</p>
+                    <p className="text-sm font-medium text-slate-700 mb-1">Reason:</p>
+                    <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">{permission.reason}</p>
                   </div>
 
                   {permission.additionalInfo && (
                     <div>
-                      <p className="text-sm font-medium text-gray-300 mb-1">Additional Info:</p>
-                      <p className="text-sm text-gray-400 bg-black/20 p-3 rounded">{permission.additionalInfo}</p>
+                      <p className="text-sm font-medium text-slate-700 mb-1">Additional Info:</p>
+                      <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">{permission.additionalInfo}</p>
                     </div>
                   )}
 
@@ -199,18 +201,18 @@ export default function ViewPermissions() {
                           Approve
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-card/95 border-white/10">
+                      <DialogContent className="bg-white border-slate-200">
                         <DialogHeader>
-                          <DialogTitle className="text-white">Approve Permission Request</DialogTitle>
-                          <DialogDescription>
+                          <DialogTitle className="text-slate-900">Approve Permission Request</DialogTitle>
+                          <DialogDescription className="text-slate-600">
                             Employee: <span className="text-primary font-semibold">{permission.employeeName}</span>
                           </DialogDescription>
                         </DialogHeader>
-                        <p className="text-sm text-gray-300">Are you sure you want to approve this permission request?</p>
+                        <p className="text-sm text-slate-600">Are you sure you want to approve this permission request?</p>
                         <DialogFooter>
                           <Button
                             variant="outline"
-                            className="border-white/10 hover:bg-white/5"
+                            className="text-slate-600 border-slate-200 hover:bg-slate-50"
                           >
                             Cancel
                           </Button>
@@ -236,28 +238,28 @@ export default function ViewPermissions() {
                           Reject
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-card/95 border-white/10">
+                      <DialogContent className="bg-white border-slate-200">
                         <DialogHeader>
-                          <DialogTitle className="text-white">Reject Permission Request</DialogTitle>
-                          <DialogDescription>
+                          <DialogTitle className="text-slate-900">Reject Permission Request</DialogTitle>
+                          <DialogDescription className="text-slate-600">
                             Employee: <span className="text-primary font-semibold">{permission.employeeName}</span>
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
                           <div>
-                            <Label className="text-gray-300">Reason for Rejection (Optional)</Label>
+                            <Label className="text-slate-700 font-medium">Reason for Rejection (Optional)</Label>
                             <Textarea
                               value={rejectReason}
                               onChange={(e) => setRejectReason(e.target.value)}
                               placeholder="Provide a reason for rejection..."
-                              className="mt-2 bg-black/20 border-white/10 text-white min-h-[100px]"
+                              className="mt-2 bg-white border-slate-200 text-slate-900 min-h-[100px]"
                             />
                           </div>
                         </div>
                         <DialogFooter>
                           <Button
                             variant="outline"
-                            className="border-white/10 hover:bg-white/5"
+                            className="text-slate-600 border-slate-200 hover:bg-slate-50"
                           >
                             Cancel
                           </Button>

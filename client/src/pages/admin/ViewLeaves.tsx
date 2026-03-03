@@ -79,22 +79,24 @@ export default function ViewLeaves() {
       console.warn('No user in context; aborting action');
       return;
     }
-    
+
     await updateLeaveStatus(id, status, `${user.code} (${user.name})`, reason);
     const allLeaves = await getStoredLeaves();
     setLeaves(allLeaves.filter(l => l.status === 'Pending'));
-    
+
     toast({
       title: `Leave ${status}`,
       description: `Request has been ${status.toLowerCase()}.`,
-      className: status === 'Approved' ? "bg-green-500/10 border-green-500/20 text-white" : "bg-red-500/10 border-red-500/20 text-white"
+      className: status === 'Approved'
+        ? "bg-green-500/10 border-green-500/20 text-green-700 font-medium"
+        : "bg-red-500/10 border-red-500/20 text-red-700 font-medium"
     });
-    
+
     setRejectReason('');
     setSelectedLeaveId(null);
   };
 
-  const filteredLeaves = leaves.filter(l => 
+  const filteredLeaves = leaves.filter(l =>
     l.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     l.employeeCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     l.type.toLowerCase().includes(searchTerm.toLowerCase())
@@ -104,56 +106,56 @@ export default function ViewLeaves() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-3xl font-display font-bold text-white mb-2">View Pending Leaves</h2>
-          <p className="text-muted-foreground">Review and take action on leave requests</p>
+          <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">View Pending Leaves</h2>
+          <p className="text-slate-600">Review and take action on leave requests</p>
         </div>
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input 
-            placeholder="Search by Name, Code, Type..." 
+          <Input
+            placeholder="Search by Name, Code, Type..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-black/20 border-white/10 text-white focus:border-primary/50"
+            className="pl-10 bg-white border-slate-200 text-slate-900 focus:border-primary/50"
           />
         </div>
       </div>
 
       {/* Note for OD/Comp Off dual approval */}
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 text-sm text-blue-300">
-        <p className="font-medium">⚠️ Note: OD and Comp Off leaves require approval from both HR and Admin before they are finalized.</p>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
+        <p className="font-bold">⚠️ Note: OD and Comp Off leaves require approval from both HR and Admin before they are finalized.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
         {filteredLeaves.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground bg-card/20 rounded-lg border border-white/5">
+          <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-lg border border-slate-100 italic">
             No pending leave requests found matching your search.
           </div>
         ) : (
           filteredLeaves.map((leave) => (
-            <Card key={leave.id} className="bg-card/40 backdrop-blur border-white/10 hover:border-primary/30 transition-all">
+            <Card key={leave.id} className="bg-white border-slate-200 hover:border-primary/50 transition-all duration-300 shadow-sm">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row justify-between gap-6">
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       {/* Show name and id together when possible (e.g. "Naveen Kumar (E0053)") */}
                       <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-bold text-white">{leave.employeeName ? `${leave.employeeName} (${leave.employeeId || leave.employeeCode})` : (leave.employeeCode || leave.employeeId)}</h3>
+                        <h3 className="text-xl font-bold text-slate-900">{leave.employeeName ? `${leave.employeeName} (${leave.employeeId || leave.employeeCode})` : (leave.employeeCode || leave.employeeId)}</h3>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="bg-white/5">{leave.type}</Badge>
-                          <Badge variant="outline" className="text-primary border-primary/20">{leave.employeeId || leave.employeeCode}</Badge>
+                          <Badge variant="secondary" className="bg-slate-50 border-slate-200 text-slate-700">{leave.type}</Badge>
+                          <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 font-mono">{leave.employeeId || leave.employeeCode}</Badge>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 text-sm text-gray-400">
-                      <div><span className="text-gray-500">Duration:</span> {leave.startDate} to {leave.endDate} ({leave.duration})</div>
-                      <div><span className="text-gray-500">Applied:</span> {leave.appliedDate}</div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 text-sm text-slate-500 font-medium">
+                      <div><span className="text-slate-400">Duration:</span> {leave.startDate} to {leave.endDate} ({leave.duration})</div>
+                      <div><span className="text-slate-400">Applied:</span> {leave.appliedDate}</div>
                     </div>
 
-                    <div className="mt-4 p-3 bg-black/20 rounded-md border border-white/5">
-                      <p className="text-sm text-gray-300 italic">"{leave.description}"</p>
+                    <div className="mt-4 p-3 bg-slate-50 rounded-md border border-slate-100">
+                      <p className="text-sm text-slate-600 italic">"{leave.description}"</p>
                     </div>
-                    
+
                     {leave.attachment && (
                       <Dialog>
                         <DialogTrigger asChild>
@@ -162,10 +164,10 @@ export default function ViewLeaves() {
                             View Attachment
                           </div>
                         </DialogTrigger>
-                        <DialogContent className="bg-card/95 border-white/10 w-[90vw] max-w-4xl">
+                        <DialogContent className="bg-white border-slate-200 w-[90vw] max-w-4xl">
                           <DialogHeader>
-                            <DialogTitle className="text-white">Attachment Preview</DialogTitle>
-                            <DialogDescription className="text-sm text-gray-400">Preview the uploaded attachment</DialogDescription>
+                            <DialogTitle className="text-slate-900">Attachment Preview</DialogTitle>
+                            <DialogDescription className="text-sm text-slate-500">Preview the uploaded attachment</DialogDescription>
                           </DialogHeader>
                           <div className="py-4">
                             {leave.attachment.startsWith('data:application/pdf') ? (
@@ -187,61 +189,61 @@ export default function ViewLeaves() {
                       <DialogTrigger asChild>
                         <Button
                           onClick={() => setSelectedLeaveId(leave.id)}
-                          className="flex-1 w-full bg-green-600/20 hover:bg-green-600/30 text-green-500 border border-green-600/20 hover:border-green-600/50"
+                          className="flex-1 w-full bg-green-50 aspect-video md:aspect-auto hover:bg-green-100 text-green-600 border border-green-200 font-bold"
                           data-testid={`button-approve-${leave.id}`}
                           title={['OD', 'Comp Off'].includes(leave.type) ? 'Requires approval from both HR and Admin' : ''}
                         >
                           <Check className="w-4 h-4 mr-2" /> Approve
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-card/95 border-white/10">
+                      <DialogContent className="bg-white border-slate-200">
                         <DialogHeader>
-                          <DialogTitle className="text-white">Approve Leave Request</DialogTitle>
-                          <DialogDescription className="text-sm text-gray-400">Are you sure you want to approve this leave request?</DialogDescription>
+                          <DialogTitle className="text-slate-900">Approve Leave Request</DialogTitle>
+                          <DialogDescription className="text-sm text-slate-500 font-medium">Are you sure you want to approve this leave request?</DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <Button variant="outline" className="border-white/10 hover:bg-white/5">Cancel</Button>
+                          <Button variant="outline" className="border-slate-200 hover:bg-slate-50 text-slate-600">Cancel</Button>
                           <DialogClose asChild>
-                            <Button onClick={() => handleAction(leave.id, 'Approved')} className="bg-green-600 hover:bg-green-700 text-white">Confirm Approval</Button>
+                            <Button onClick={() => handleAction(leave.id, 'Approved')} className="bg-green-600 hover:bg-green-700 text-white font-bold">Confirm Approval</Button>
                           </DialogClose>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                    
+
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button 
+                        <Button
                           variant="outline"
-                          className="flex-1 w-full bg-red-600/10 hover:bg-red-600/20 text-red-500 border-red-600/20 hover:border-red-600/50"
+                          className="flex-1 w-full bg-red-50 hover:bg-red-100 text-red-600 border-red-200 font-bold"
                           data-testid={`button-reject-${leave.id}`}
                         >
                           <X className="w-4 h-4 mr-2" /> Reject
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-card border-white/10 text-white">
+                      <DialogContent className="bg-white border-slate-200">
                         <DialogHeader>
-                          <DialogTitle>Reject Leave Request</DialogTitle>
-                          <DialogDescription>
+                          <DialogTitle className="text-slate-900">Reject Leave Request</DialogTitle>
+                          <DialogDescription className="text-slate-500 font-medium">
                             Please provide a reason for rejection. This will be visible to the employee.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="py-4">
-                          <Label htmlFor="reason" className="text-gray-300">Rejection Reason</Label>
-                          <Textarea 
-                            id="reason" 
+                          <Label htmlFor="reason" className="text-slate-700 font-bold mb-2 block">Rejection Reason</Label>
+                          <Textarea
+                            id="reason"
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
                             placeholder="e.g. Critical project delivery deadline..."
-                            className="bg-black/20 border-white/10 text-white mt-2"
+                            className="bg-white border-slate-200 text-slate-900 mt-2"
                           />
                         </div>
                         <DialogFooter>
-                          <Button variant="outline" className="border-white/10 hover:bg-white/5">Cancel</Button>
+                          <Button variant="outline" className="border-slate-200 hover:bg-slate-50 text-slate-600">Cancel</Button>
                           <DialogClose asChild>
-                            <Button 
+                            <Button
                               onClick={() => handleAction(leave.id, 'Rejected', rejectReason)}
                               disabled={!rejectReason}
-                              className="bg-red-600 hover:bg-red-700 text-white"
+                              className="bg-red-600 hover:bg-red-700 text-white font-bold"
                             >
                               Confirm Rejection
                             </Button>
@@ -249,7 +251,7 @@ export default function ViewLeaves() {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                    
+
                   </div>
                 </div>
               </CardContent>

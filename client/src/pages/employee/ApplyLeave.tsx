@@ -96,10 +96,10 @@ export default function ApplyLeave() {
       employeeName: user.name,
       employeeCode: user.code,
       ...data,
-      status: 'Pending',
+      status: 'Pending' as const,
       attachment: attachment?.dataUrl,
       appliedDate: new Date().toISOString().split('T')[0]
-    };
+    } as any;
 
     try {
       await addLeaveRequest(leaveData);
@@ -123,12 +123,12 @@ export default function ApplyLeave() {
         hrEmails: ['naveen@ctint.in'],
         adminEmails: ['naveen@ctint.in']
       })
-    }).catch(() => {});
+    }).catch(() => { });
 
     toast({
       title: "✅ Leave Application Submitted",
       description: "Your manager will review it shortly. Notification sent to HR and Admin.",
-      className: "bg-green-500/10 border-green-500/20 text-white"
+      className: "bg-green-500/10 border-green-500/20 text-green-700 font-medium"
     });
 
     setLocation('/employee/dashboard');
@@ -198,13 +198,13 @@ export default function ApplyLeave() {
           hrEmails: ['naveen@ctint.in'],
           adminEmails: ['naveen@ctint.in']
         })
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     toast({
       title: "✅ Permission Request Submitted",
       description: "HR/Admin will review it shortly. Notification sent.",
-      className: "bg-green-500/10 border-green-500/20 text-white"
+      className: "bg-green-500/10 border-green-500/20 text-green-700 font-medium"
     });
 
     setLocation('/employee/dashboard');
@@ -246,19 +246,19 @@ export default function ApplyLeave() {
     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
       <div className="mb-6 flex justify-between items-start">
         <div>
-          <h2 className="text-3xl font-display font-bold text-white mb-2">Apply for Leave</h2>
-          <p className="text-muted-foreground">Submit your leave request for approval</p>
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">Apply for Leave</h2>
+          <p className="text-slate-600">Submit your leave request for approval</p>
         </div>
         {balance && (
           <div className="flex gap-4 text-xs">
-            <div className="bg-card/40 border border-white/10 px-3 py-2 rounded-md">
-              <span className="text-gray-400 block">Casual Balance</span>
+            <div className="bg-white border border-slate-200 px-3 py-2 rounded-md shadow-sm">
+              <span className="text-slate-500 block">Casual Balance</span>
               <span className={`font-bold ${balance.casual.remaining === 0 ? 'text-red-500' : 'text-primary'}`}>
                 {balance.casual.remaining} / {balance.casual.total}
               </span>
             </div>
-            <div className="bg-card/40 border border-white/10 px-3 py-2 rounded-md">
-              <span className="text-gray-400 block">Sick Balance</span>
+            <div className="bg-white border border-slate-200 px-3 py-2 rounded-md shadow-sm">
+              <span className="text-slate-500 block">Sick Balance</span>
               <span className={`font-bold ${balance.sick.remaining === 0 ? 'text-red-500' : 'text-primary'}`}>
                 {balance.sick.remaining} / {balance.sick.total}
               </span>
@@ -267,17 +267,17 @@ export default function ApplyLeave() {
         )}
       </div>
 
-      <Card className="bg-card/50 backdrop-blur-xl border-white/10 shadow-2xl">
+      <Card className="bg-white border-slate-200 shadow-2xl">
         <CardContent className="pt-6">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            
+
             <div className="space-y-2">
-              <Label className="text-gray-300">Leave Type</Label>
+              <Label className="text-slate-700 font-medium">Leave Type</Label>
               <Select onValueChange={(val) => form.setValue('type', val as any)} defaultValue={form.getValues('type')}>
-                <SelectTrigger className="bg-black/20 border-white/10 text-white">
+                <SelectTrigger className="bg-white border-slate-200 text-slate-900">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-white/10 text-white">
+                <SelectContent className="bg-white border-slate-200 text-slate-900">
                   <SelectItem value="Casual">Casual Leave</SelectItem>
                   <SelectItem value="Sick">Sick Leave</SelectItem>
                   <SelectItem value="OD">On Duty (OD)</SelectItem>
@@ -290,55 +290,55 @@ export default function ApplyLeave() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-gray-300">Start Date</Label>
-                <Input 
-                  type="date" 
+                <Label className="text-slate-700 font-medium">Start Date</Label>
+                <Input
+                  type="date"
                   {...form.register('startDate')}
-                  className="bg-black/20 border-white/10 text-white" 
+                  className="bg-white border-slate-200 text-slate-900"
                 />
                 {form.formState.errors.startDate && <p className="text-red-400 text-xs">{form.formState.errors.startDate.message}</p>}
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300">End Date</Label>
-                <Input 
-                  type="date" 
+                <Label className="text-slate-700 font-medium">End Date</Label>
+                <Input
+                  type="date"
                   {...form.register('endDate')}
-                  className="bg-black/20 border-white/10 text-white" 
+                  className="bg-white border-slate-200 text-slate-900"
                 />
-                 {form.formState.errors.endDate && <p className="text-red-400 text-xs">{form.formState.errors.endDate.message}</p>}
+                {form.formState.errors.endDate && <p className="text-red-400 text-xs">{form.formState.errors.endDate.message}</p>}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300">Duration</Label>
-              <RadioGroup 
-                defaultValue="Full Day" 
+              <Label className="text-slate-700 font-medium">Duration</Label>
+              <RadioGroup
+                defaultValue="Full Day"
                 onValueChange={(val) => form.setValue('duration', val as any)}
                 className="flex gap-4"
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Full Day" id="full" className="border-primary text-primary" />
-                  <Label htmlFor="full" className="text-white">Full Day</Label>
+                  <RadioGroupItem value="Full Day" id="full" className="border-slate-300 text-primary" />
+                  <Label htmlFor="full" className="text-slate-900">Full Day</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Half Day" id="half" className="border-primary text-primary" />
-                  <Label htmlFor="half" className="text-white">Half Day</Label>
+                  <RadioGroupItem value="Half Day" id="half" className="border-slate-300 text-primary" />
+                  <Label htmlFor="half" className="text-slate-900">Half Day</Label>
                 </div>
               </RadioGroup>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300">Reason / Description</Label>
-              <Textarea 
+              <Label className="text-slate-700 font-medium">Reason / Description</Label>
+              <Textarea
                 {...form.register('description')}
                 placeholder="Please describe the reason for your leave..."
-                className="bg-black/20 border-white/10 text-white min-h-[100px]"
+                className="bg-white border-slate-200 text-slate-900 min-h-[100px]"
               />
               {form.formState.errors.description && <p className="text-red-400 text-xs">{form.formState.errors.description.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300">Attachment (Optional)</Label>
+              <Label className="text-slate-700 font-medium">Attachment (Optional)</Label>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -351,18 +351,18 @@ export default function ApplyLeave() {
                 onDrop={onDrop}
                 onDragOver={(e) => e.preventDefault()}
                 role="button"
-                className="border-2 border-dashed border-white/10 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer bg-black/20"
+                className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer bg-slate-50"
               >
                 {!attachment ? (
                   <>
-                    <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>
-                    <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG up to 5MB</p>
+                    <p className="text-sm text-slate-600 font-medium">Click to upload or drag and drop</p>
+                    <p className="text-xs text-slate-400 mt-1">PDF, JPG, PNG up to 5MB</p>
                   </>
                 ) : (
                   <div className="flex items-center justify-between">
                     <div className="text-left">
-                      <p className="text-sm text-white">{attachment.name}</p>
-                      <p className="text-xs text-muted-foreground">{(attachment.size / 1024).toFixed(1)} KB</p>
+                      <p className="text-sm text-slate-900 font-semibold">{attachment.name}</p>
+                      <p className="text-xs text-slate-500 font-medium">{(attachment.size / 1024).toFixed(1)} KB</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" onClick={(e) => { e.stopPropagation(); removeAttachment(); }} className="text-red-400">Remove</Button>

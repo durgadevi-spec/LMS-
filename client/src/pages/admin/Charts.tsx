@@ -68,25 +68,25 @@ export default function Charts() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="mb-6">
-        <h2 className="text-3xl font-display font-bold text-white mb-2">Analytics & Charts</h2>
-        <p className="text-muted-foreground">Visual insights into leave trends and productivity</p>
+        <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">Analytics & Charts</h2>
+        <p className="text-slate-600">Visual insights into leave trends and productivity</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="bg-card/40 backdrop-blur border-white/10">
+        <Card className="bg-white border-slate-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-white">Leave Type Distribution</CardTitle>
+            <CardTitle className="text-slate-900">Leave Type Distribution</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis dataKey="name" stroke="#888" />
-                  <YAxis stroke="#888" />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#111', borderColor: '#333', color: '#fff' }}
-                    itemStyle={{ color: '#fff' }}
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#fff', borderColor: '#e2e8f0', color: '#0f172a' }}
+                    itemStyle={{ color: '#0f172a' }}
                   />
                   <Bar dataKey="count" fill="#06b6d4" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -95,9 +95,9 @@ export default function Charts() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card/40 backdrop-blur border-white/10">
+        <Card className="bg-white border-slate-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-white">Request Status Overview</CardTitle>
+            <CardTitle className="text-slate-900">Request Status Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] w-full">
@@ -117,26 +117,26 @@ export default function Charts() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: '#111', borderColor: '#333' }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#fff', borderColor: '#e2e8f0' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/40 backdrop-blur border-white/10 lg:col-span-2">
+        <Card className="bg-white border-slate-200 shadow-sm lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-white">Monthly Leave Trends</CardTitle>
+            <CardTitle className="text-slate-900">Monthly Leave Trends</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis dataKey="name" stroke="#888" />
-                  <YAxis stroke="#888" />
-                  <Tooltip contentStyle={{ backgroundColor: '#111', borderColor: '#333' }} />
-                  <Line type="monotone" dataKey="leaves" stroke="#8884d8" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip contentStyle={{ backgroundColor: '#fff', borderColor: '#e2e8f0' }} />
+                  <Line type="monotone" dataKey="leaves" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 8 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

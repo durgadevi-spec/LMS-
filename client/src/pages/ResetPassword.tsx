@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useRef, useState } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 import gsap from 'gsap';
 import logoUrl from '@assets/Screenshot_2025-10-15_183825_1765652253224.png';
 
@@ -26,6 +26,8 @@ export default function ResetPassword() {
     const { toast } = useToast();
     const containerRef = useRef<HTMLDivElement>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Get token from URL
     const searchParams = new URLSearchParams(window.location.search);
@@ -83,7 +85,7 @@ export default function ResetPassword() {
             toast({
                 title: "Success",
                 description: "Your password has been reset successfully. You can now login.",
-                className: "bg-green-500/10 border-green-500/20 text-white"
+                className: "bg-green-500/10 border-green-500/20 text-green-700 font-medium"
             });
 
             setTimeout(() => setLocation('/'), 2000);
@@ -101,11 +103,11 @@ export default function ResetPassword() {
 
     if (!token) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background text-white p-4">
-                <Card className="bg-card/50 backdrop-blur-xl border-white/10 p-6 text-center max-w-sm">
-                    <CardTitle className="text-red-400 mb-4">Invalid Link</CardTitle>
-                    <p className="text-gray-400 mb-6">The password reset link is invalid or has expired.</p>
-                    <Button onClick={() => setLocation('/')} variant="outline" className="w-full">
+            <div className="min-h-screen flex items-center justify-center bg-white text-slate-900 p-4">
+                <Card className="bg-white border-slate-200 p-6 text-center max-w-sm shadow-xl">
+                    <CardTitle className="text-red-500 mb-4">Invalid Link</CardTitle>
+                    <p className="text-slate-600 mb-6">The password reset link is invalid or has expired.</p>
+                    <Button onClick={() => setLocation('/')} variant="outline" className="w-full border-slate-200">
                         Back to Login
                     </Button>
                 </Card>
@@ -129,12 +131,12 @@ export default function ResetPassword() {
                     />
                 </div>
 
-                <Card className="bg-card/50 backdrop-blur-xl border-white/10 shadow-2xl">
+                <Card className="bg-white border-slate-200 shadow-2xl">
                     <CardHeader className="space-y-1 reset-element">
-                        <CardTitle className="text-3xl text-center text-white font-display mb-2">
+                        <CardTitle className="text-3xl text-center text-slate-900 font-display font-bold mb-2">
                             Reset Password
                         </CardTitle>
-                        <CardDescription className="text-center text-gray-300">
+                        <CardDescription className="text-center text-slate-600">
                             Set a new secure password for your account
                         </CardDescription>
                     </CardHeader>
@@ -142,16 +144,22 @@ export default function ResetPassword() {
                     <CardContent className="reset-element">
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300">New Password</label>
+                                <label className="text-sm font-bold text-slate-700">New Password</label>
                                 <div className="relative group">
-                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-600 rounded-lg blur opacity-20 group-hover:opacity-50 transition duration-500"></div>
                                     <Input
                                         {...form.register("password")}
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         placeholder="••••••••"
-                                        className="relative bg-black/40 border-white/10 text-white placeholder:text-gray-600 focus:border-primary/50 transition-all h-12"
+                                        className="relative bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-primary/50 transition-all h-12 pr-10"
                                         autoComplete="new-password"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                    >
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
                                 </div>
                                 {form.formState.errors.password && (
                                     <p className="text-red-400 text-xs mt-1">{form.formState.errors.password.message}</p>
@@ -159,16 +167,22 @@ export default function ResetPassword() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300">Confirm Password</label>
+                                <label className="text-sm font-bold text-slate-700">Confirm Password</label>
                                 <div className="relative group">
-                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-600 rounded-lg blur opacity-20 group-hover:opacity-50 transition duration-500"></div>
                                     <Input
                                         {...form.register("confirmPassword")}
-                                        type="password"
+                                        type={showConfirmPassword ? "text" : "password"}
                                         placeholder="••••••••"
-                                        className="relative bg-black/40 border-white/10 text-white placeholder:text-gray-600 focus:border-primary/50 transition-all h-12"
+                                        className="relative bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-primary/50 transition-all h-12 pr-10"
                                         autoComplete="new-password"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
                                 </div>
                                 {form.formState.errors.confirmPassword && (
                                     <p className="text-red-400 text-xs mt-1">{form.formState.errors.confirmPassword.message}</p>

@@ -82,14 +82,14 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
         hrEmails: ['naveen@ctint.in'],
         adminEmails: ['naveen@ctint.in']
       })
-    }).catch(() => {});
+    }).catch(() => { });
 
     console.log('Permission Request Submitted:', permissionRequest);
 
     toast({
       title: "✅ Permission Request Submitted",
       description: "Your request has been sent to HR and Admin for approval. Notification sent to their email.",
-      className: "bg-green-500/10 border-green-500/20 text-white"
+      className: "bg-green-500/10 border-green-500/20 text-green-700 font-medium"
     });
 
     if (onClose) {
@@ -106,20 +106,20 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-2">
               <Lock className="w-6 h-6 text-primary" />
-              <h2 className="text-3xl font-display font-bold text-white">Request Permission</h2>
+              <h2 className="text-3xl font-display font-bold text-slate-900">Request Permission</h2>
             </div>
-            <p className="text-muted-foreground">Submit a request for permission you need</p>
+            <p className="text-slate-600">Submit a request for permission you need</p>
           </div>
-          <Card className="bg-card/50 backdrop-blur-xl border-white/10 shadow-2xl">
+          <Card className="bg-white border-slate-200 shadow-2xl">
             <CardContent className="pt-6">
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Permission Type</Label>
+                  <Label className="text-slate-700 font-medium">Permission Type</Label>
                   <Select onValueChange={(val) => form.setValue('type', val as any)} defaultValue={form.getValues('type')}>
-                    <SelectTrigger className="bg-black/20 border-white/10 text-white">
+                    <SelectTrigger className="bg-white border-slate-200 text-slate-900">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
-                    <SelectContent className="bg-card border-white/10 text-white">
+                    <SelectContent className="bg-white border-slate-200 text-slate-900">
                       <SelectItem value="Late Entry Permission">Late Entry Permission</SelectItem>
                       <SelectItem value="Early Exit Permission">Early Exit Permission</SelectItem>
                       <SelectItem value="Personal Work Permission">Personal Work Permission</SelectItem>
@@ -130,41 +130,41 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Start Time</Label>
-                    <Input 
-                      type="time" 
+                    <Label className="text-slate-700 font-medium">Start Time</Label>
+                    <Input
+                      type="time"
                       {...form.register('startTime')}
-                      className="bg-black/20 border-white/10 text-white" 
+                      className="bg-white border-slate-200 text-slate-900"
                     />
                     {form.formState.errors.startTime && <p className="text-red-400 text-xs">{form.formState.errors.startTime.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">End Time</Label>
-                    <Input 
-                      type="time" 
+                    <Label className="text-slate-700 font-medium">End Time</Label>
+                    <Input
+                      type="time"
                       {...form.register('endTime')}
-                      className="bg-black/20 border-white/10 text-white" 
+                      className="bg-white border-slate-200 text-slate-900"
                     />
                     {form.formState.errors.endTime && <p className="text-red-400 text-xs">{form.formState.errors.endTime.message}</p>}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Reason / Justification</Label>
-                  <Textarea 
+                  <Label className="text-slate-700 font-medium">Reason / Justification</Label>
+                  <Textarea
                     {...form.register('reason')}
                     placeholder="Please explain why you need this permission..."
-                    className="bg-black/20 border-white/10 text-white min-h-[100px]"
+                    className="bg-white border-slate-200 text-slate-900 min-h-[100px]"
                   />
                   {form.formState.errors.reason && <p className="text-red-400 text-xs">{form.formState.errors.reason.message}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Additional Information (Optional)</Label>
-                  <Textarea 
+                  <Label className="text-slate-700 font-medium">Additional Information (Optional)</Label>
+                  <Textarea
                     {...form.register('additionalInfo')}
                     placeholder="Add any additional details or context..."
-                    className="bg-black/20 border-white/10 text-white min-h-[80px]"
+                    className="bg-white border-slate-200 text-slate-900 min-h-[80px]"
                   />
                 </div>
 
@@ -180,12 +180,12 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
       ) : (
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <Label className="text-gray-300">Permission Type</Label>
+            <Label className="text-slate-700 font-medium">Permission Type</Label>
             <Select onValueChange={(val) => form.setValue('type', val as any)} defaultValue={form.getValues('type')}>
-              <SelectTrigger className="bg-black/20 border-white/10 text-white">
+              <SelectTrigger className="bg-white border-slate-200 text-slate-900">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
-              <SelectContent className="bg-card border-white/10 text-white">
+              <SelectContent className="bg-white border-slate-200 text-slate-900">
                 <SelectItem value="Late Entry Permission">Late Entry Permission</SelectItem>
                 <SelectItem value="Early Exit Permission">Early Exit Permission</SelectItem>
                 <SelectItem value="Personal Work Permission">Personal Work Permission</SelectItem>
@@ -196,41 +196,41 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-gray-300">Start Time</Label>
-              <Input 
-                type="time" 
+              <Label className="text-slate-700 font-medium">Start Time</Label>
+              <Input
+                type="time"
                 {...form.register('startTime')}
-                className="bg-black/20 border-white/10 text-white" 
+                className="bg-white border-slate-200 text-slate-900"
               />
               {form.formState.errors.startTime && <p className="text-red-400 text-xs">{form.formState.errors.startTime.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">End Time</Label>
-              <Input 
-                type="time" 
+              <Label className="text-slate-700 font-medium">End Time</Label>
+              <Input
+                type="time"
                 {...form.register('endTime')}
-                className="bg-black/20 border-white/10 text-white" 
+                className="bg-white border-slate-200 text-slate-900"
               />
               {form.formState.errors.endTime && <p className="text-red-400 text-xs">{form.formState.errors.endTime.message}</p>}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-gray-300">Reason / Justification</Label>
-            <Textarea 
+            <Label className="text-slate-700 font-medium">Reason / Justification</Label>
+            <Textarea
               {...form.register('reason')}
               placeholder="Please explain why you need this permission..."
-              className="bg-black/20 border-white/10 text-white min-h-[100px]"
+              className="bg-white border-slate-200 text-slate-900 min-h-[100px]"
             />
             {form.formState.errors.reason && <p className="text-red-400 text-xs">{form.formState.errors.reason.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-gray-300">Additional Information (Optional)</Label>
-            <Textarea 
+            <Label className="text-slate-700 font-medium">Additional Information (Optional)</Label>
+            <Textarea
               {...form.register('additionalInfo')}
               placeholder="Add any additional details or context..."
-              className="bg-black/20 border-white/10 text-white min-h-[80px]"
+              className="bg-white border-slate-200 text-slate-900 min-h-[80px]"
             />
           </div>
 

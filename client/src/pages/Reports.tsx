@@ -201,8 +201,8 @@ export default function Reports() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-display font-bold text-white mb-2">Leave & OD Reports</h2>
-          <p className="text-muted-foreground">Comprehensive view of all employee leaves and on-duty requests</p>
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">Leave & OD Reports</h2>
+          <p className="text-slate-600">Comprehensive view of all employee leaves and on-duty requests</p>
         </div>
         <div className="flex gap-3 flex-wrap">
           <Button
@@ -238,7 +238,7 @@ export default function Reports() {
             placeholder="Search Employee Name or Code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-black/20 border-white/10 text-white focus:border-primary/50"
+            className="pl-10 bg-white border-slate-200 text-slate-900 focus:border-primary/50"
             data-testid="input-search-employee"
           />
         </div>
@@ -246,14 +246,14 @@ export default function Reports() {
           placeholder="Filter by Designation..."
           value={searchDepartment}
           onChange={(e) => setSearchDepartment(e.target.value)}
-          className="bg-black/20 border-white/10 text-white focus:border-primary/50"
+          className="bg-white border-slate-200 text-slate-900 focus:border-primary/50"
           data-testid="input-search-designation"
         />
         <Input
           type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
-          className="bg-black/20 border-white/10 text-white focus:border-primary/50"
+          className="bg-white border-slate-200 text-slate-900 focus:border-primary/50"
           data-testid="input-filter-date"
         />
       </div>
@@ -272,26 +272,26 @@ export default function Reports() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-white/5">
-                <TableRow className="hover:bg-transparent border-white/10">
-                  <TableHead className="text-gray-300">Employee</TableHead>
-                  <TableHead className="text-gray-300">Code</TableHead>
-                  <TableHead className="text-gray-300">Designation</TableHead>
-                  <TableHead className="text-gray-300 text-center">Casual</TableHead>
-                  <TableHead className="text-gray-300 text-center">Sick</TableHead>
-                  <TableHead className="text-gray-300 text-center">OD</TableHead>
-                  <TableHead className="text-gray-300 text-center">Comp Off</TableHead>
-                  <TableHead className="text-gray-300 text-center">LWP</TableHead>
-                  <TableHead className="text-gray-300 text-center">Permission</TableHead>
-                  <TableHead className="text-gray-300 text-center">Earned</TableHead>
-                  <TableHead className="text-gray-300 text-center">Total</TableHead>
+                <TableRow className="hover:bg-transparent border-slate-100">
+                  <TableHead className="text-slate-600 font-bold">Employee</TableHead>
+                  <TableHead className="text-slate-600 font-bold">Code</TableHead>
+                  <TableHead className="text-slate-600 font-bold">Designation</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">Casual</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">Sick</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">OD</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">Comp Off</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">LWP</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">Permission</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">Earned</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredData.map((item) => (
-                  <TableRow key={item.user.id} className="hover:bg-white/5 border-white/10 transition-colors">
-                    <TableCell className="font-medium text-white">{item.user.name}</TableCell>
-                    <TableCell className="text-primary font-mono">{item.user.code}</TableCell>
-                    <TableCell className="text-gray-300 text-sm">{item.user.designation}</TableCell>
+                  <TableRow key={item.user.id} className="hover:bg-slate-50 border-slate-100 transition-colors">
+                    <TableCell className="font-medium text-slate-900">{item.user.name}</TableCell>
+                    <TableCell className="text-primary font-mono font-bold">{item.user.code}</TableCell>
+                    <TableCell className="text-slate-600 text-sm">{item.user.designation}</TableCell>
                     <TableCell className="text-center text-blue-400 font-bold">{item.casual}</TableCell>
                     <TableCell className="text-center text-red-400 font-bold">{item.sick}</TableCell>
                     <TableCell className="text-center text-green-400 font-bold">{item.od}</TableCell>
@@ -306,55 +306,6 @@ export default function Reports() {
                     </TableCell>
                   </TableRow>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Detailed Leave Listing */}
-      <Card className="bg-card/40 backdrop-blur border-white/10">
-        <CardHeader>
-          <CardTitle className="text-white">All Approved Leaves {selectedDate && `on ${format(new Date(selectedDate), 'MMM dd, yyyy')}`}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-white/5">
-                <TableRow className="hover:bg-transparent border-white/10">
-                  <TableHead className="text-gray-300">Employee</TableHead>
-                  <TableHead className="text-gray-300">Type</TableHead>
-                  <TableHead className="text-gray-300">Duration</TableHead>
-                  <TableHead className="text-gray-300">From - To</TableHead>
-                  <TableHead className="text-gray-300">Reason</TableHead>
-                  <TableHead className="text-gray-300">Applied</TableHead>
-                  <TableHead className="text-gray-300">Approved By</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leaves
-                  .filter(l => {
-                    const matchesSearch = searchTerm === '' || l.employeeName.toLowerCase().includes(searchTerm.toLowerCase());
-                    const matchesDate = !selectedDate || (l.startDate <= selectedDate && l.endDate >= selectedDate);
-                    return l.status === 'Approved' && matchesSearch && matchesDate;
-                  })
-                  .map((leave) => (
-                    <TableRow key={leave.id} className="hover:bg-white/5 border-white/10 transition-colors" data-testid={`row-leave-${leave.id}`}>
-                      <TableCell className="font-medium text-white">{leave.employeeName}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={getStatusColor(leave.type)}>
-                          {leave.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-300">{leave.duration}</TableCell>
-                      <TableCell className="text-gray-300 text-sm">
-                        {format(new Date(leave.startDate), 'MMM dd')} - {format(new Date(leave.endDate), 'MMM dd, yyyy')}
-                      </TableCell>
-                      <TableCell className="text-gray-300 max-w-[200px] truncate">{leave.description}</TableCell>
-                      <TableCell className="text-gray-300 text-sm">{format(new Date(leave.appliedDate), 'MMM dd')}</TableCell>
-                      <TableCell className="text-xs text-gray-400">{leave.actionBy || '-'}</TableCell>
-                    </TableRow>
-                  ))}
               </TableBody>
             </Table>
           </div>

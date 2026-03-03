@@ -15,31 +15,30 @@
 }
 
 .type-label {
-    color: #94A3B8;
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-.type-ratio {
-    color: #F8FAFC;
+    color: #64748B;
     font-size: 0.875rem;
     font-weight: 700;
 }
 
-.ratio-used {
-    font-size: 1.125rem;
+.type-ratio {
+    color: #0F172A;
+    font-size: 0.875rem;
     font-weight: 800;
 }
 
+.ratio-used {
+    font-size: 1.125rem;
+    font-weight: 900;
+}
+
 .ratio-total {
-    color: #64748B;
+    color: #94A3B8;
     font-size: 0.875rem;
 }
 
 .progress-track {
     height: 10px;
-    background: rgba(255, 255, 255, 0.04);
-    background: rgba(255, 255, 255, 0.04);
+    background: #F1F5F9;
     border-radius: 6px;
     overflow: hidden;
     position: relative;
@@ -52,16 +51,14 @@
     position: relative;
 }
 
-/* Personal Leave - Neon Blue */
+/* Personal Leave - Blue */
 .fill-personal {
-    background: linear-gradient(90deg, #1D4ED8, #3B82F6);
-    box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+    background: linear-gradient(90deg, #2563EB, #60A5FA);
 }
 
-/* Sick Leave - Neon Purple */
+/* Sick Leave - Purple */
 .fill-sick {
-    background: linear-gradient(90deg, #6D28D9, #8B5CF6);
-    box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+    background: linear-gradient(90deg, #7C3AED, #A78BFA);
 }
 
 /* Shine animation */
@@ -74,7 +71,7 @@
     bottom: 0;
     background: linear-gradient(90deg,
             transparent,
-            rgba(255, 255, 255, 0.25),
+            rgba(255, 255, 255, 0.4),
             transparent);
     animation: bar-shine 3s infinite;
 }
@@ -92,7 +89,7 @@
 .balance-footer {
     margin-top: 1.5rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid #F1F5F9;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -101,12 +98,13 @@
 .balance-footer .reset-text {
     font-size: 0.75rem;
     color: #64748B;
+    font-weight: 500;
 }
 
 .balance-footer .alert-icon {
     width: 14px;
     height: 14px;
-    color: #06B6D4;
+    color: #0284C7;
 }
 
 @media (max-width: 640px) {
