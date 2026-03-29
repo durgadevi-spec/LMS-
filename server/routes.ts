@@ -59,7 +59,7 @@ export async function registerRoutes(
 
   app.post("/api/send-permission-notification", async (req, res) => {
     try {
-      const { employeeName, permissionType, startTime, endTime, reason } = req.body;
+      const { employeeName, permissionType, date, startTime, endTime, reason } = req.body;
 
       // Resolve recipients server-side using Supabase service role (or fall back to ADMIN_EMAIL)
       const { adminEmails, hrEmails } = await getNotificationEmailsServer();
@@ -73,7 +73,7 @@ export async function registerRoutes(
         }
       }
 
-      const emailContent = generatePermissionNotificationEmail(employeeName, permissionType, startTime, endTime, reason);
+      const emailContent = generatePermissionNotificationEmail(employeeName, permissionType, date, startTime, endTime, reason);
 
       const sent = await sendEmailNotification({
         to: recipients,

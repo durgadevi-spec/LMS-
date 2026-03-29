@@ -1,4 +1,5 @@
-import { getStoredLeaves, getStoredUsers, getStoredPermissions } from '@/lib/storage';
+import { getStoredLeaves, getStoredPermissions, getAllUsersAsync } from '@/lib/storage';
+import { User } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +7,8 @@ import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Search, Download, Mail, MessageCircle } from 'lucide-react';
+import { Search, Download, Mail, MessageCircle, Eye } from 'lucide-react';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { StatCards } from '@/components/StatCards';
@@ -14,11 +16,12 @@ import { StatCards } from '@/components/StatCards';
 export default function Reports() {
   const [leaves, setLeaves] = useState<any[]>([]);
   const [permissions, setPermissions] = useState<any[]>([]);
-  const users = getStoredUsers();
+  const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [searchDepartment, setSearchDepartment] = useState('');
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,6 +30,8 @@ export default function Reports() {
       setLeaves(allLeaves);
       const allPermissions = await getStoredPermissions();
       setPermissions(allPermissions);
+      const allUsers = await getAllUsersAsync();
+      setUsers(allUsers);
       setLoading(false);
     };
     loadLeaves();
@@ -36,8 +41,14 @@ export default function Reports() {
     try {
       const employees = users.filter(u => u.role === 'Employee');
       const reportData = employees.map(user => {
-        const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
-        const userPermissions = permissions.filter(p => p.employeeCode === user.code && p.status === 'Approved');
+        const userLeaves = leaves.filter(l => 
+          (l.employeeCode === user.code || l.employeeCode === user.id || l.employeeName === user.name) && 
+          l.status === 'Approved'
+        );
+        const userPermissions = permissions.filter(p => 
+          (p.employeeCode === user.code || p.employeeCode === user.id || p.employeeName === user.name) && 
+          p.status === 'Approved'
+        );
         const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
         const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
         const odCount = userLeaves.filter(l => l.type === 'OD').length;
@@ -93,8 +104,14 @@ export default function Reports() {
     try {
       const employees = users.filter(u => u.role === 'Employee');
       const reportData = employees.map(user => {
-        const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
-        const userPermissions = permissions.filter(p => p.employeeCode === user.code && p.status === 'Approved');
+        const userLeaves = leaves.filter(l => 
+          (l.employeeCode === user.code || l.employeeCode === user.id || l.employeeName === user.name) && 
+          l.status === 'Approved'
+        );
+        const userPermissions = permissions.filter(p => 
+          (p.employeeCode === user.code || p.employeeCode === user.id || p.employeeName === user.name) && 
+          p.status === 'Approved'
+        );
         const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
         const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
         const odCount = userLeaves.filter(l => l.type === 'OD').length;
@@ -156,8 +173,14 @@ export default function Reports() {
   const reportData = users
     .filter(u => u.role === 'Employee')
     .map(user => {
-      const userLeaves = leaves.filter(l => l.employeeCode === user.code && l.status === 'Approved');
-      const userPermissions = permissions.filter(p => p.employeeCode === user.code && p.status === 'Approved');
+      const userLeaves = leaves.filter(l => 
+        (l.employeeCode === user.code || l.employeeCode === user.id || l.employeeName === user.name) && 
+        l.status === 'Approved'
+      );
+      const userPermissions = permissions.filter(p => 
+        (p.employeeCode === user.code || p.employeeCode === user.id || p.employeeName === user.name) && 
+        p.status === 'Approved'
+      );
 
       const casualCount = userLeaves.filter(l => l.type === 'Casual').length;
       const sickCount = userLeaves.filter(l => l.type === 'Sick').length;
@@ -284,6 +307,7 @@ export default function Reports() {
                   <TableHead className="text-slate-600 font-bold text-center">Permission</TableHead>
                   <TableHead className="text-slate-600 font-bold text-center">Earned</TableHead>
                   <TableHead className="text-slate-600 font-bold text-center">Total</TableHead>
+                  <TableHead className="text-slate-600 font-bold text-center">Report</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -303,6 +327,16 @@ export default function Reports() {
                       <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
                         {item.total}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setLocation(`/admin/individual-report/${item.user.id}`)}
+                        className="text-primary hover:text-primary/80"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

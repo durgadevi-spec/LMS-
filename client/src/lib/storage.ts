@@ -1,13 +1,36 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { format } from 'date-fns';
-import { User, LeaveRequest, INITIAL_LEAVES, INITIAL_USERS } from './data';
+import { User, LeaveRequest, Role, INITIAL_LEAVES, INITIAL_USERS } from './data';
 
 // Backwards-compatible synchronous getter for places that still call
 // `getStoredUsers()` synchronously. This returns the initial in-memory
 // user list until the app is fully migrated to async DB calls.
 export function getStoredUsers(): User[] {
   return INITIAL_USERS;
+}
+
+export async function getAllUsersAsync(): Promise<User[]> {
+  try {
+    const { data, error } = await supabase.from('users').select('*');
+    if (error) throw error;
+    
+    return (data || []).map((u: any) => {
+       const dbRole = (u.role || 'employee').toString().toLowerCase();
+       const mappedRole: Role = dbRole === 'admin' ? 'Admin' : dbRole === 'hr' ? 'HR' : 'Employee';
+       return {
+         id: String(u.user_id || u.username || ''),
+         code: u.username || u.user_id || '',
+         name: u.name || u.username || '',
+         role: mappedRole,
+         designation: u.designation || '',
+         email: u.email || undefined,
+       };
+    });
+  } catch (err) {
+    console.error('Error fetching all users async:', err);
+    return INITIAL_USERS;
+  }
 }
 
 export function updateUser(id: string, updatedData: Partial<User>) {
@@ -193,6 +216,7 @@ export interface PermissionRequest {
   type: 'Late Entry Permission' | 'Early Exit Permission' | 'Personal Work Permission' | 'Emergency Permission';
   startTime: string;
   endTime: string;
+  date: string;
   reason: string;
   additionalInfo?: string;
   status: 'Pending' | 'Approved' | 'Rejected';
@@ -231,6 +255,7 @@ export async function getStoredPermissions(): Promise<PermissionRequest[]> {
       type: DB_TO_DISPLAY[row.permission_type] || row.permission_type,
       startTime: row.from_time || '',
       endTime: row.to_time || '',
+      date: row.permission_date || row.created_at ? format(new Date(row.permission_date || row.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
       reason: row.reason || '',
       additionalInfo: row.additional_info || undefined,
       status: row.status || 'Pending',
@@ -262,6 +287,7 @@ export async function addPermissionRequest(permission: PermissionRequest) {
       permission_type: dbType,
       from_time: permission.startTime,
       to_time: permission.endTime,
+      permission_date: permission.date,
       reason: permission.reason,
       additional_info: permission.additionalInfo || null,
     };

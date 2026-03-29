@@ -15,6 +15,7 @@ import { addPermissionRequest, PermissionRequest } from '@/lib/storage';
 
 const permissionSchema = z.object({
   type: z.enum(['Late Entry Permission', 'Early Exit Permission', 'Personal Work Permission', 'Emergency Permission']),
+  date: z.string().min(1, "Date is required"),
   startTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
   reason: z.string().min(10, "Reason must be at least 10 characters"),
@@ -32,6 +33,7 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
     resolver: zodResolver(permissionSchema),
     defaultValues: {
       type: 'Late Entry Permission',
+      date: new Date().toISOString().split('T')[0],
     }
   });
 
@@ -54,6 +56,7 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
       type: data.type,
       startTime: data.startTime,
       endTime: data.endTime,
+      date: data.date,
       reason: data.reason,
       additionalInfo: data.additionalInfo,
       status: 'Pending',
@@ -76,6 +79,7 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
       body: JSON.stringify({
         employeeName: user.name,
         permissionType: data.type,
+        date: data.date,
         startTime: data.startTime,
         endTime: data.endTime,
         reason: data.reason,
@@ -126,6 +130,16 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
                       <SelectItem value="Emergency Permission">Emergency Permission</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-slate-700 font-medium">Permission Date</Label>
+                  <Input
+                    type="date"
+                    {...form.register('date')}
+                    className="bg-white border-slate-200 text-slate-900"
+                  />
+                  {form.formState.errors.date && <p className="text-red-400 text-xs">{form.formState.errors.date.message}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -192,6 +206,16 @@ export default function Permission({ onClose }: { onClose?: () => void }) {
                 <SelectItem value="Emergency Permission">Emergency Permission</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-slate-700 font-medium">Permission Date</Label>
+            <Input
+              type="date"
+              {...form.register('date')}
+              className="bg-white border-slate-200 text-slate-900"
+            />
+            {form.formState.errors.date && <p className="text-red-400 text-xs">{form.formState.errors.date.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

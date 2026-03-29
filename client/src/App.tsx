@@ -15,6 +15,7 @@ import Employees from '@/pages/admin/Employees';
 import ApprovedLeaves from '@/pages/admin/ApprovedLeaves';
 import ApprovedPermissions from '@/pages/admin/ApprovedPermissions';
 import Reports from '@/pages/Reports';
+import IndividualReport from '@/pages/admin/IndividualReport';
 import ResetPassword from '@/pages/ResetPassword';
 
 function ProtectedRoute({ component: Component, role }: { component: any, role?: 'Admin' | 'Employee' | 'HR' }) {
@@ -124,6 +125,9 @@ function AppRoutes() {
       {/* Reports - Accessible by Admin and HR */}
       <Route path="/reports">
         <ProtectedRoute component={Reports} role="Admin" />
+      </Route>
+      <Route path="/admin/individual-report/:id">
+        <ProtectedRoute component={IndividualReport} role="Employee" />
       </Route>
 
       <Route>

@@ -107,7 +107,7 @@ export function generateLeaveNotificationEmail(employeeName: string, leaveType: 
   `;
 }
 
-export function generatePermissionNotificationEmail(employeeName: string, permissionType: string, startTime: string, endTime: string, reason: string): string {
+export function generatePermissionNotificationEmail(employeeName: string, permissionType: string, date: string, startTime: string, endTime: string, reason: string): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">New Permission Request Submitted</h2>
@@ -115,6 +115,7 @@ export function generatePermissionNotificationEmail(employeeName: string, permis
       
       <p style="margin: 10px 0;"><strong>Employee Name:</strong> ${employeeName}</p>
       <p style="margin: 10px 0;"><strong>Permission Type:</strong> ${permissionType}</p>
+      <p style="margin: 10px 0;"><strong>Permission Date:</strong> ${date}</p>
       <p style="margin: 10px 0;"><strong>Start Time:</strong> ${startTime}</p>
       <p style="margin: 10px 0;"><strong>End Time:</strong> ${endTime}</p>
       <p style="margin: 10px 0;"><strong>Reason:</strong> ${reason}</p>

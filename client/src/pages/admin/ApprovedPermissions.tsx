@@ -33,7 +33,7 @@ export default function ApprovedPermissions() {
                 'Employee Name': p.employeeName,
                 'Employee Code': p.employeeCode,
                 'Permission Type': p.type,
-                'Date': p.appliedDate,
+                'Date': p.date,
                 'Start Time': p.startTime,
                 'End Time': p.endTime,
                 'Approved By': p.actionBy || '-',
@@ -63,7 +63,7 @@ export default function ApprovedPermissions() {
             p.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.employeeCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.type.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesDate = !selectedDate || p.appliedDate === selectedDate;
+        const matchesDate = !selectedDate || p.date === selectedDate;
         return matchesSearch && matchesDate;
     });
 
@@ -159,7 +159,7 @@ export default function ApprovedPermissions() {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-slate-600 text-sm font-medium">
-                                                {item.appliedDate}
+                                                {item.date}
                                             </TableCell>
                                             <TableCell className="text-slate-600 max-w-[200px] truncate" title={item.reason}>
                                                 {item.reason}

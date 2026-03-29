@@ -29,6 +29,7 @@ export function Sidebar() {
     { icon: Lock, label: 'Permission', path: '/employee/permission' },
     { icon: History, label: 'Leave History', path: '/employee/history' },
     { icon: User, label: 'Profile', path: '/employee/profile' },
+    { icon: BarChart3, label: 'My Report', path: `/admin/individual-report/${user?.id || ''}` },
   ];
 
   const adminLinks = [

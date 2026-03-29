@@ -161,6 +161,10 @@ export default function ViewPermissions() {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 px-3 bg-slate-50 rounded-lg border border-slate-100">
                     <div>
+                      <p className="text-xs text-slate-500 font-medium">Perm Date</p>
+                      <p className="text-sm font-semibold text-slate-900">{permission.date}</p>
+                    </div>
+                    <div>
                       <p className="text-xs text-slate-500 font-medium">Start Time</p>
                       <p className="text-sm font-semibold text-slate-900">{permission.startTime}</p>
                     </div>
@@ -171,10 +175,6 @@ export default function ViewPermissions() {
                     <div>
                       <p className="text-xs text-slate-500 font-medium">Applied Date</p>
                       <p className="text-sm font-semibold text-slate-900">{permission.appliedDate}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium">Status</p>
-                      <Badge variant="secondary" className="mt-1">{permission.status}</Badge>
                     </div>
                   </div>
 

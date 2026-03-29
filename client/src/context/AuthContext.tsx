@@ -18,7 +18,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    // Do not persist user to localStorage; keep session in memory only.
+    // Check localStorage for persisted session on mount
+    const savedUser = localStorage.getItem('leave_manager_user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (err) {
+        console.error('Failed to parse saved user', err);
+        localStorage.removeItem('leave_manager_user');
+      }
+    }
     setIsLoading(false);
   }, []);
 
@@ -69,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setUser(foundUser);
+      localStorage.setItem('leave_manager_user', JSON.stringify(foundUser));
       return true;
 
     } catch (err) {
@@ -79,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    // Do not use localStorage; session cleared in memory.
+    localStorage.removeItem('leave_manager_user');
     setLocation('/');
   };
 
